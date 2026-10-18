@@ -1,0 +1,36 @@
+MOS-RZ2 | Compile, assemble, run
+Executed: 2026-09-13 15:30:12 +07:00
+Tools: ../iot-rz/test (local course bundle)
+
+> rz36.exe mos-rz2.txt > mos-rz2-s.txt
+Compiler exit code: 0
+
+> as21.exe mos-rz2-s.txt
+Assembler exit code: 0
+
+> sim21.exe mos-rz2-s.obj  [input: g, then q]
+>interrupt0
+interrupt0
+interrupt0
++1 interrupt0
+interrupt0
+interrupt0
++2 interrupt0
+interrupt0
+interrupt0
+interrupt0
+interrupt0
++3 interrupt0
+interrupt0
+interrupt0
+interrupt0
+interrupt0
++4 interrupt0
+interrupt0
+interrupt0
+interrupt0
++5 interrupt0
+>
+Simulator exit code: 0
+
+Verified program output: +1 +2 +3 +4 +5

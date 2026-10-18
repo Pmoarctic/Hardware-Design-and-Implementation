@@ -1,0 +1,25 @@
+// readport
+
+modulo()
+
+int0()
+  x = readport(10)   // sine
+  print(x)
+  x = readport(11)   // square wave
+  print(x)
+  x = readport(12)   // 31-bit random num
+  x = modulo(x/2,100) 
+  print(x)
+  x = readport(13)   // master clock
+  print(x)
+
+modulo(x,y)
+  asm("pop sp r2")
+  asm("pop sp r1")
+  asm("mod r1 r1 r2")
+  return x
+
+main()
+  settimer0(100)
+  while(1)
+    doze()

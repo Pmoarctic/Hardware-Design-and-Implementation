@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Homework 4 - Semaphore handshake output</title><style>*{box-sizing:border-box}body{margin:0;padding:24px;background:#10141b;color:#eef3fa;font-family:Consolas,monospace}main{max-width:1050px;margin:auto}h1{font:600 25px system-ui;color:#98e4b6;margin:0 0 8px}p{font:14px system-ui;color:#adb9c9;margin:0 0 18px}pre{background:#171e28;border:1px solid #3a4655;padding:20px;white-space:pre-wrap;font:15px/1.4 Consolas,monospace;margin:0}</style></head><body><main><h1>Homework 4 - Semaphore handshake</h1><p>Actual recorded execution log. A sends a number; B adds 1 and replies; A prints. Repeated five times.</p><pre>Homework 4: two processes handshake with semaphores
+Executed: 2026-09-13 15:47:20 +07:00
+
+&gt; rz36.exe handshake-rz.txt &gt; handshake-s.txt
+Compiler exit code: 0
+
+&gt; as21.exe handshake-s.txt
+Assembler exit code: 0
+
+&gt; sim21.exe handshake-s.obj  [input: g, then q]
+&gt;interrupt0
+interrupt0
+interrupt0
+1 
+interrupt0
+interrupt0
+2 
+interrupt0
+interrupt0
+interrupt0
+interrupt0
+3 
+interrupt0
+interrupt0
+interrupt0
+4 
+interrupt0
+interrupt0
+interrupt0
+5 
+interrupt0
+interrupt0
+&gt;
+Simulator exit code: 0
+</pre></main></body></html>

@@ -1,0 +1,36 @@
+pseudo code to show using interrupt to do task switching
+count1()  count 1 2 ...
+count2()  count 11 12 ...
+
+count1() and count2() alternate run using timer0 
+timer0 is set in the simulator (150) and is on by default
+timer0 generates interrupt0
+interrupt0 vector is stored at M[1000]
+
+memory map
+
+global 
+cnt1  100
+cnt2  101
+
+main()
+  intvec = &count1   // set interrupt vector to count1()
+  cnt1 = 1
+  cnt2 = 11
+  i = 0
+  while i < 10       // do it for 10 times
+     doze
+     i = i + 1
+     
+count1()
+  print(cnt1)
+  cnt1 = cnt1 + 1
+  intvec = &count2  // set int vec to count2()
+  reti
+
+count2()
+  print(cnt2)
+  cnt2 = cnt2 + 1
+  intvec = &count1
+  reti
+

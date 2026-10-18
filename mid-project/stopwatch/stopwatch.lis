@@ -1,0 +1,125 @@
+.symbol
+.code 0
+0  mov r29 #3000
+1  di #0
+2  di #1
+3  di #2
+4  di #3
+5  mov r1 #timer_isr
+6  st r1 1000
+7  mov r1 #button_isr
+8  st r1 1002
+9  mov r1 #1000
+10  trap r1 #13
+11  mov r1 #0
+12  st r1 elapsed
+13  st r1 running
+14  st r1 lap_count
+15  st r1 previous
+16  st r1 command
+17  st r1 result
+18  st r1 main_passes
+19  mov r2 #0
+:init_laps
+20  st r1 @1200 r2
+21  st r1 @1220 r2
+22  add r2 r2 #1
+23  lt r3 r2 #10
+24  jt r3 init_laps
+25  ei #0
+26  ei #2
+27  mov r1 #1
+28  st r1 ready
+:main_loop
+29  ld r10 main_passes
+30  add r10 r10 #1
+31  st r10 main_passes
+32  wfi
+33  jmp main_loop
+:timer_isr
+34  trap r29 #15
+35  ld r1 running
+36  jf r1 timer_done
+37  ld r2 elapsed
+38  add r2 r2 #1
+39  st r2 elapsed
+:timer_done
+40  trap r29 #16
+41  reti
+:button_isr
+42  trap r29 #15
+43  ld r1 command
+44  eq r2 r1 #1
+45  jt r2 toggle
+46  eq r2 r1 #2
+47  jt r2 save_lap
+48  eq r2 r1 #3
+49  jt r2 reset
+50  mov r1 #7
+51  st r1 result
+52  jmp button_done
+:toggle
+53  ld r1 running
+54  jf r1 start
+55  mov r1 #0
+56  st r1 running
+57  mov r1 #2
+58  st r1 result
+59  jmp button_done
+:start
+60  mov r1 #1
+61  st r1 running
+62  st r1 result
+63  jmp button_done
+:save_lap
+64  ld r1 running
+65  jf r1 not_running
+66  ld r2 lap_count
+67  lt r3 r2 #10
+68  jf r3 buffer_full
+69  ld r1 elapsed
+70  st r1 @1200 r2
+71  ld r3 previous
+72  sub r4 r1 r3
+73  st r4 @1220 r2
+74  st r1 previous
+75  add r2 r2 #1
+76  st r2 lap_count
+77  mov r1 #3
+78  st r1 result
+79  jmp button_done
+:not_running
+80  mov r1 #5
+81  st r1 result
+82  jmp button_done
+:buffer_full
+83  mov r1 #4
+84  st r1 result
+85  jmp button_done
+:reset
+86  mov r1 #0
+87  st r1 running
+88  st r1 elapsed
+89  st r1 lap_count
+90  st r1 previous
+91  mov r2 #0
+:clear_laps
+92  st r1 @1200 r2
+93  st r1 @1220 r2
+94  add r2 r2 #1
+95  lt r3 r2 #10
+96  jt r3 clear_laps
+97  mov r1 #6
+98  st r1 result
+:button_done
+99  mov r1 #0
+100  st r1 command
+101  trap r29 #16
+102  reti
+.data 1100
+1100 0 0 0 0 0 0 0 0
+.data 1200
+1200 0 0 0 0 0 0 0 0 0 0
+.data 1220
+1220 0 0 0 0 0 0 0 0 0 0
+.end

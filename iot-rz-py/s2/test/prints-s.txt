@@ -1,0 +1,12 @@
+; prints
+
+
+.symbol
+.code 0
+mov r1 #strbuf
+trap r1 #3
+trap r0 #0
+.data 2000
+:strbuf
+65 66 67 68 69 0
+.end

@@ -1,0 +1,55 @@
+
+; test char
+
+.symbol
+  fp 27
+  sp 28
+  ads 2000
+  four 4
+.code 0
+:begin
+  ld r2 1000
+  ld r3 @20 r4
+  ld r4 +r5 r6
+  ld r2 ads
+  ld r2 @four r3
+  st r2 +r3 r4
+  jmp ads
+  jal r5 begin
+  jt r6 while
+  jf r6 exit
+  add r1 r2 r3
+  add r4 r5 #6
+  mod r7 r8 r9
+  mod r10 r11 #12
+  mov r13 #14
+  mov r15 r16
+  ret r7
+  trap r7 #1
+  push sp r8
+  pop sp r9
+  not r10 r11
+  int #1
+  int #four
+  ei #2
+  di #3
+  reti
+  wfi
+
+  mov r1 #45   ; comment
+:while
+  lt r2 r1 #64
+  jf r2 exit
+
+; blank line
+
+  trap r1 #2
+  add r1 r1 #1
+  jmp while
+:exit
+  trap r0 #0
+  nop
+.data 200
+  11 22 33
+:enddata
+.end

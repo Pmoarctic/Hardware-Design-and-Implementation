@@ -1,0 +1,34 @@
+Homework 4: two processes handshake with semaphores
+Executed: 2026-09-13 15:47:20 +07:00
+
+> rz36.exe handshake-rz.txt > handshake-s.txt
+Compiler exit code: 0
+
+> as21.exe handshake-s.txt
+Assembler exit code: 0
+
+> sim21.exe handshake-s.obj  [input: g, then q]
+>interrupt0
+interrupt0
+interrupt0
+1 
+interrupt0
+interrupt0
+2 
+interrupt0
+interrupt0
+interrupt0
+interrupt0
+3 
+interrupt0
+interrupt0
+interrupt0
+4 
+interrupt0
+interrupt0
+interrupt0
+5 
+interrupt0
+interrupt0
+>
+Simulator exit code: 0

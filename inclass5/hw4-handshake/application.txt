@@ -1,0 +1,41 @@
+processA()
+processB()
+
+toA, toB
+shareVar
+
+main()
+  di(0)
+  nump = 0
+  freelist = 0
+  Q = malloc(2)
+  p = createp(&processB)
+  p = createp(&processA)  // boot selects A first
+  qq = Q[0]
+  toA = newsem(0)
+  toB = newsem(0)
+  shareVar = 0
+  settimer0(400)
+  boot()
+
+processA()
+  i = 0
+  number = 0
+  while( i < 5 )
+    shareVar = number     // send the number to B
+    signal(toB)
+    wait(toA)             // wait for B's reply
+    number = shareVar
+    print(number)
+    printc(10)
+    i = i + 1
+  terminate()
+
+processB()
+  i = 0
+  while( i < 5 )
+    wait(toB)             // wait for A's number
+    shareVar = shareVar + 1
+    signal(toA)           // send the result back to A
+    i = i + 1
+  terminate()

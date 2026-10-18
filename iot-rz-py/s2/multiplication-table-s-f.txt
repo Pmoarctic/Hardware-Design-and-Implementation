@@ -1,0 +1,51 @@
+.symbol
+ fp 30
+ sp 29
+ retval 28
+ rads 27
+ table 1100
+.code 0
+ mov fp #3500
+ mov sp #3000
+ jal rads main
+ trap r0 #0
+; fun main pv 0
+:main
+; gnAsg :(#1 0 )
+; gnAsg :(#2 2 )
+; gnAsg :(#3 1 )
+; gnAsg :((vec table #1 )(* #2 #3 ))
+st r1 @1 fp
+st r2 @2 fp
+st r3 @3 fp
+st r4 @4 fp
+add fp fp #5
+st rads @0 fp
+mov r1 #0
+mov r2 #2
+jmp L102
+:L103
+mov r3 #1
+jmp L104
+:L105
+mul r4 r2 r3
+st r4 @table r1
+add r1 r1 #1
+add r3 r3 #1
+:L104
+le r4 r3 #12
+jt r4 L105
+add r2 r2 #1
+:L102
+le r4 r2 #3
+jt r4 L103
+:L101
+ld rads @0 fp
+sub fp fp #5
+ld r4 @4 fp
+ld r3 @3 fp
+ld r2 @2 fp
+ld r1 @1 fp
+ret rads
+.data 200
+.end

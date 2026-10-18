@@ -1,0 +1,221 @@
+
+// mos in Rz
+//  with semaphore
+//  update  10 Feb 2025 
+
+Q, qq           // Q process queue, qq points to currentp in Q
+nump		// number of active process
+currentp	// current process
+
+newp()
+  return malloc(16)
+
+newStack()
+  return malloc(64)
+
+newFrame()
+  return malloc(64)
+
+// function prototype
+new(v)
+appendL(L,a)
+
+enqueue(q,p)	     // put p in queue q
+  appendL(q,new(p))  // add it to the end of queue   
+
+dequeueQ()	     // dequeue the current process
+  nump = nump - 1    // by marking it, not delete the node
+  p = currentp
+  p[3] = 0           // mark it not-active
+
+createp(ads)
+  p = newp()             // new PCB
+  p[0] = ads             // p.PC
+  p[1] = newStack()+16   // p.SP, offset for initial popm
+  p[2] = newFrame()      // p.FP
+  p[3] = 1		 // ready
+  enqueue(Q,p)
+  nump = nump + 1
+  return p
+
+nextQ()
+  qq = qq[1]           // next
+  return qq[0]         // get p
+
+nextp()                // next process from process queue
+  p = nextQ()
+  while( p[3] == 0 )   // not ready
+    p = nextQ()
+  return p	     
+
+terminate()           // terminate the current process
+  asm("di #0")
+  dequeueQ()
+  asm("int #0")       // task switch
+
+// task switch
+//    use r1 but it will be restore
+//    store state PC,SP,FP,rads,retval in PCB
+#noframe
+int0()
+  asm("di #0")
+  asm("trap sp #15")		// save currentp context
+  asm("push sp rads")		// save link register
+  asm("push sp retval")         // save retval register
+  asm("ld r1 currentp")		// save current process
+  asm("st r31 @0 r1")		// p.PC = RetAds
+  asm("st sp @1 r1")		// p.SP = sp
+  asm("st fp @2 r1")		// p.FP = fp
+  
+  if(nump == 0)
+    asm("trap r0 #0")		// no process, stop simulation
+  currentp = nextp()		// update currentp
+
+  asm("ld r1 currentp")	        // restore next process
+  asm("ld r31 @0 r1")           // restore p.PC
+  asm("ld sp @1 r1")   	        // restore p.SP
+  asm("ld fp @2 r1")            // restore p.FP
+  asm("pop sp retval")          // restore retval
+  asm("pop sp rads")            // restore link 
+  asm("trap sp #16")		// restore context
+
+boot()
+  currentp = newp()    // zeroth process not in Q	
+  asm("int #0")	       // run task in Q
+
+
+// ---- manage list -----
+
+freelist 
+
+new(v)      // get a cell
+  if( freelist == 0 )
+    a = malloc(2)
+  else
+    a = freelist
+    freelist = a[1]   // next
+  a[0] = v 
+  a[1] = 0
+  return a
+
+free(a)   // free a cell
+  a[1] = freelist
+  freelist = a
+
+//  a queue is a single link circular list with header
+//    header[0] points to head of list
+//    header[1] points to end of list
+
+appendL(L,a)    	// append list L with cell a
+  if( L[0] == 0 )       // empty list
+    L[0] = a
+  else
+    b = L[1]		// L.end
+    b[1] = a            // append a
+  L[1] = a		// update L.end
+  a[1] = L[0]           // make it circular
+
+dequeue(L)		// delete head from L
+  a = L[0]		// L.head
+  b = L[1]		// L.end
+  if( a == b )		// singleton
+    L[0] = 0		// empty
+    L[1] = 0
+  else
+    c = a[1]            // next in queue
+    L[0] = c            // update L.head
+    b[1] = c            // update b.tail, make circular
+  p = a[0]
+  free(a)
+  return p              // return first process in queue
+
+// ----- semaphore --------
+
+blockp()
+  print("*",currentp)
+  dequeueQ()           // dequeue currentp
+  asm("int #0")	       // task switch
+
+wakeup(p)
+  print("!",p)
+  nump = nump + 1
+  p[3] = 1             // mark as ready
+
+newsem(x)
+  s = malloc(2)
+  s[0] = x             // initial value
+  s[1] = new(0)        // make a list, wait list is empty
+  return s
+
+wait(s)
+  asm("di #0")
+  s[0] = s[0] - 1
+  if( s[0] < 0 )
+    enqueue(s[1],currentp)  // put currentp to wait list
+    blockp()               
+  else
+    asm("ei #0")
+
+signal(s)
+  asm("di #0")
+  s[0] = s[0] + 1
+  if( s[0] <= 0 )
+    p = dequeue(s[1])	// get p from wait list
+    wakeup(p)
+  asm("ei #0")
+
+// function prototype
+reader()
+writer()
+
+full, empty   // semaphores
+
+printqueue()
+  hd = Q[0]
+  tl = Q[1]
+  p1 = hd[0]
+  p2 = tl[0]
+  print("Q ",p1,p2,"\n")
+  print("pcb ",p1,p1[0],"\n")
+  print("pcb ",p2,p2[0],"\n")
+
+main()
+  asm("di #0")
+  nump = 0
+  freelist = 0
+  Q = malloc(2)        // make a list
+  p = createp(&reader)
+  p = createp(&writer) // order is important when start
+  qq = Q[0]            // point to Q head
+  printqueue()
+  full = newsem(0)     // writer starts first
+  empty = newsem(1)
+  settimer0(300)
+  boot()
+
+// ------------- applications ----------
+
+// reader and writer synchronise, both run forever
+// writer starts first
+// initial value of semaphore is important
+
+cnt1
+
+writer()
+  cnt1 = 0
+  while(1)
+    wait(empty)
+    cnt1 = cnt1 + 1
+    print(cnt1)
+    signal(full)
+
+reader()
+  while(1)
+    wait(full)
+    print("+",cnt1)
+    signal(empty)
+    
+
+// ------------------------------------------
+
+   

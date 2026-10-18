@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>MOS-RZ2 execution output</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10141b;color:#eef3fa;padding:24px;font-family:Consolas,monospace}
+main{max-width:1000px;margin:auto}h1{font:600 25px system-ui;margin:0 0 8px;color:#98e4b6}
+p{color:#adb9c9;font:14px system-ui;margin:0 0 18px}
+pre{margin:0;background:#171e28;border:1px solid #3a4655;padding:20px;white-space:pre-wrap;font:15px/1.45 Consolas,monospace}
+</style></head><body><main><h1>MOS-RZ2 execution output</h1>
+<p>Recorded command log from the local course tools. Source: mos-rz2.txt (unchanged).</p>
+<pre>MOS-RZ2 | Compile, assemble, run
+Executed: 2026-09-13 15:30:12 +07:00
+Tools: ../iot-rz/test (local course bundle)
+
+&gt; rz36.exe mos-rz2.txt &gt; mos-rz2-s.txt
+Compiler exit code: 0
+
+&gt; as21.exe mos-rz2-s.txt
+Assembler exit code: 0
+
+&gt; sim21.exe mos-rz2-s.obj  [input: g, then q]
+&gt;interrupt0
+interrupt0
+interrupt0
++1 interrupt0
+interrupt0
+interrupt0
++2 interrupt0
+interrupt0
+interrupt0
+interrupt0
+interrupt0
++3 interrupt0
+interrupt0
+interrupt0
+interrupt0
+interrupt0
++4 interrupt0
+interrupt0
+interrupt0
+interrupt0
++5 interrupt0
+&gt;
+Simulator exit code: 0
+
+Verified program output: +1 +2 +3 +4 +5</pre></main></body></html>

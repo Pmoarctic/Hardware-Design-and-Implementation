@@ -1,0 +1,169 @@
+
+// mos in Rz
+//    demo  two simple processes
+//    update   11 Feb 2018
+//    update    6 Feb 2025
+
+Q[20], qindex         // process queue
+nump		      // number of active process
+currentp	      // current process
+
+newp()
+  return malloc(16)
+
+newStack()
+  return malloc(64)
+
+newFrame()
+  return malloc(64)
+
+// ----------package queue ------------
+
+endQ
+freeQ
+freelist
+
+initQ()
+  endQ = 18
+  freeQ = 2
+  freelist = 0
+
+getnode()
+  if( freelist == 0)
+     m = freeQ
+     freeQ = freeQ + 2
+     if( freeQ > endQ )
+        print("error out of Q memory")
+  else
+     m = freelist
+     freelist = Q[freelist+1]
+  return m
+ 
+
+// append value x to queue, head is at idx
+appendQ(idx,x)
+  if( idx == 0 )     // empty queue
+    w = getnode()
+    Q[w] = x
+    Q[w+1] = w          // one circular node
+    return w
+  else                  // append at p
+    m = idx
+    nx = Q[idx+1]
+    p = nx
+    while( nx != m)
+      p = nx
+      nx = Q[p+1]
+    // end of Q is at p
+    w = getnode()
+    Q[w] = x
+    Q[w+1] = m    // circular
+    Q[p+1] = w    // append
+    return w
+
+printqueue(p)
+  s = p
+  while(Q[p+1] != s)
+    print(p,":",Q[p],Q[p+1],"\n")
+    p = Q[p+1]
+  print(p,":",Q[p],Q[p+1],"\n")
+
+printQ()
+  i = 0
+  while( i < 20 )
+    print(Q[i])
+    i = i + 1
+  print("\n")
+
+// -----------------------
+
+
+createp(ads)
+  p = newp()             // new PCB
+  p[0] = ads             // p.PC
+  p[1] = newStack()+16   // p.SP, offset for initial popm
+  p[2] = newFrame()      // p.FP
+  return p
+
+nextp()
+  if( nump == 0 )
+    return 0
+  qindex = Q[qindex+1]    // next process
+  return Q[qindex]
+
+// task switch,  must not use local regs and frame
+//    use r24
+#noframe
+int0()
+  asm("di #0")
+  asm("trap sp #15")           // pushm sp
+  asm("push sp rads")          // save link register
+  asm("push sp retval")        // save retv register
+
+  asm("ld r24 currentp")
+  asm("st r31 @0 r24")          // p.PC = ret ads
+  asm("st sp @1 r24")		// p.SP = sp
+  asm("st fp @2 r24")		// p.FP = fp
+ 
+  p = nextp()
+  if( p == 0 )			// no process in the queue
+    asm("trap r0 #0")		// stop simulation
+  currentp = p			// update currentp
+
+  asm("ld r24 currentp")
+  asm("ld sp @1 r24")   	// restore p.SP
+  asm("ld fp @2 r24")		// restore p.FP
+  asm("ld r31 @0 r24")		// restore p.PC
+
+  asm("pop sp retval")          // restore link reg
+  asm("pop sp rads")            // restore retval
+  asm("trap sp #16")            // popm sp       
+  asm("ei #0")
+
+boot()
+  currentp = newp()		// zeroth process not in Q
+  asm("ei #0")			
+  asm("int #0")			// run task in Q
+
+// function prototype
+process1()
+process2()
+
+main()
+  asm("di #0")
+  initQ()
+  settimer0(120)
+  qindex = 0
+  qend = 0
+  nump = 2
+  p = createp(&process1)
+  qindex = appendQ(qindex,p)
+  p = createp(&process2)
+  qindex = appendQ(qindex,p)
+  printQ()
+//  printqueue(qindex)
+  boot()
+
+// ------------- applications ----------
+
+// two counter processes
+
+cnt1, cnt2
+
+process1()
+  cnt1 = 0
+  while(1)
+    cnt1 = cnt1 + 1
+    print(cnt1)
+    doze()
+
+process2()
+  cnt2 = 100
+  while(1)
+    cnt2 = cnt2 + 1
+    print(cnt2)
+    doze()
+
+
+// ------------------------------------------
+

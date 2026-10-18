@@ -1,0 +1,109 @@
+// queue
+
+Q[20]
+endQ
+freeQ
+freelist
+
+init()
+  endQ = 18
+  freeQ = 2
+  freelist = 0
+
+getnode()
+  if( freelist == 0)
+     m = freeQ
+     freeQ = freeQ + 2
+     if( freeQ > endQ )
+        print("error out of Q memory")
+  else
+     m = freelist
+     freelist = Q[freelist+1]
+  return m
+ 
+freep(p)
+  Q[p+1] = freelist
+  freelist = p
+
+make4p()
+  now = getnode()
+  s = now
+  i = 0
+  while( i < 3)
+    nx = getnode()
+    Q[now+1] = nx
+    now = nx
+    i = i + 1
+  Q[now+1] = s     // circular
+  return s
+
+deletep(p)
+  m = p
+  nx = Q[p+1]
+  while( nx != m)
+    p = nx
+    nx = Q[p+1]
+  nx = Q[m+1]
+  Q[p+1] = nx
+  freep(m)
+  return nx
+
+// append value x to queue, head is at p
+appendQ(p,x)
+  m = p
+  nx = Q[p+1]
+  while( nx != m)
+    p = nx
+    nx = Q[p+1]
+  // end of Q is at p
+  w = getnode()
+  Q[w] = x
+  Q[w+1] = m    // circular
+  Q[p+1] = w    // append
+
+printqueue(p)
+  s = p
+  while(Q[p+1] != s)
+    print(p,":",Q[p],Q[p+1],"\n")
+    p = Q[p+1]
+  print(p,":",Q[p],Q[p+1],"\n")
+
+printQ()
+  i = 0
+  while( i < 20 )
+    print(Q[i])
+    i = i + 1
+  print("\n")
+
+printfree()
+  p = freelist
+  while ( p != 0)
+    print(p,"#",Q[p],Q[p+1],"\n")
+    p = Q[p+1]
+
+main()
+  settimer0(1000)
+  init()
+  a = getnode()
+  b = getnode()
+  Q[a+1] = b
+  Q[b+1] = a
+  printQ()
+  printqueue(a)
+  print(freelist,freeQ)
+
+test()
+  p = make4p()
+  printQ()
+  print("\n")
+  printqueue(p)
+  m = deletep(2)
+  printQ()
+  printqueue(m)
+  printfree()
+  appendQ(m,11)
+  printQ()
+  printqueue(m)
+
+
+

@@ -1,0 +1,21 @@
+
+; printstrp
+
+;  print string, use pointer style
+
+.code 0
+  mov r3 #100     ; start at 100
+  ld r2 @0 r3     ; *str
+:while
+  ne r4 r2 #0
+  jf r4 exit
+  trap r2 #2
+  add r3 r3 #1    ;  str++
+  ld r2 @0 r3
+  jmp while
+:exit
+  trap r0 #0
+
+.data  100
+  97 98 99 100 101 102 0   ; "abcdef"
+.end

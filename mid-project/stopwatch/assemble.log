@@ -1,0 +1,148 @@
+input:start pass 2
+1 ; S2 assembly stopwatch. Assemble with the copied Python as21.py.
+2 ; INT0: timer tick, INT2: simulated button device.
+3 ; One timer tick = 1000 simulated cycles (displayed as 0.01 s).
+4 ; All stopwatch state and lap calculations are owned by this program.
+5 .symbol
+6  elapsed 1100
+7  running 1101
+8  lap_count 1102
+9  previous 1103
+10  command 1104
+11  result 1105
+12  ready 1106
+13  main_passes 1107
+14  laps 1200
+15  durations 1220
+16 .code 0
+17  mov r29 #3000
+18  di #0
+19  di #1
+20  di #2
+21  di #3
+22  mov r1 #timer_isr
+23  st r1 1000
+24  mov r1 #button_isr
+25  st r1 1002
+26  mov r1 #1000
+27  trap r1 #13
+28  mov r1 #0
+29  st r1 elapsed
+30  st r1 running
+31  st r1 lap_count
+32  st r1 previous
+33  st r1 command
+34  st r1 result
+35  st r1 main_passes
+36  mov r2 #0
+37 :init_laps
+38  st r1 @1200 r2
+39  st r1 @1220 r2
+40  add r2 r2 #1
+41  lt r3 r2 #10
+42  jt r3 init_laps
+43  ei #0
+44  ei #2
+45  mov r1 #1
+46  st r1 ready
+47 ; WFI enables the master interrupt flag in this course simulator.
+48 :main_loop
+49  ld r10 main_passes
+50  add r10 r10 #1
+51  st r10 main_passes
+52  wfi
+53  jmp main_loop
+54 ; Save/restore r0-r15. Hardware saves the return PC in r31.
+55 ; Interrupt nesting is disabled by the simulator during each ISR.
+56 :timer_isr
+57  trap r29 #15
+58  ld r1 running
+59  jf r1 timer_done
+60  ld r2 elapsed
+61  add r2 r2 #1
+62  st r2 elapsed
+63 :timer_done
+64  trap r29 #16
+65  reti
+66 ; Command mailbox: 1=toggle start/pause, 2=lap, 3=reset.
+67 ; Result: 1=started, 2=paused, 3=saved, 4=full, 5=not running,
+68 ;         6=reset, 7=unknown command.
+69 :button_isr
+70  trap r29 #15
+71  ld r1 command
+72  eq r2 r1 #1
+73  jt r2 toggle
+74  eq r2 r1 #2
+75  jt r2 save_lap
+76  eq r2 r1 #3
+77  jt r2 reset
+78  mov r1 #7
+79  st r1 result
+80  jmp button_done
+81 :toggle
+82  ld r1 running
+83  jf r1 start
+84  mov r1 #0
+85  st r1 running
+86  mov r1 #2
+87  st r1 result
+88  jmp button_done
+89 :start
+90  mov r1 #1
+91  st r1 running
+92  st r1 result
+93  jmp button_done
+94 :save_lap
+95  ld r1 running
+96  jf r1 not_running
+97  ld r2 lap_count
+98  lt r3 r2 #10
+99  jf r3 buffer_full
+100 ; Snapshot current elapsed ticks. Timer ISR cannot interrupt this ISR.
+101  ld r1 elapsed
+102  st r1 @1200 r2
+103  ld r3 previous
+104  sub r4 r1 r3
+105  st r4 @1220 r2
+106  st r1 previous
+107 ; Publish count only after both values have been stored.
+108  add r2 r2 #1
+109  st r2 lap_count
+110  mov r1 #3
+111  st r1 result
+112  jmp button_done
+113 :not_running
+114  mov r1 #5
+115  st r1 result
+116  jmp button_done
+117 :buffer_full
+118  mov r1 #4
+119  st r1 result
+120  jmp button_done
+121 :reset
+122  mov r1 #0
+123  st r1 running
+124  st r1 elapsed
+125  st r1 lap_count
+126  st r1 previous
+127  mov r2 #0
+128 :clear_laps
+129  st r1 @1200 r2
+130  st r1 @1220 r2
+131  add r2 r2 #1
+132  lt r3 r2 #10
+133  jt r3 clear_laps
+134  mov r1 #6
+135  st r1 result
+136 :button_done
+137  mov r1 #0
+138  st r1 command
+139  trap r29 #16
+140  reti
+141 .data 1100
+142 0 0 0 0 0 0 0 0
+143 .data 1200
+144 0 0 0 0 0 0 0 0 0 0
+145 .data 1220
+146 0 0 0 0 0 0 0 0 0 0
+147 .end

@@ -1,0 +1,147 @@
+; S2 assembly stopwatch. Assemble with the copied Python as21.py.
+; INT0: timer tick, INT2: simulated button device.
+; One timer tick = 1000 simulated cycles (displayed as 0.01 s).
+; All stopwatch state and lap calculations are owned by this program.
+.symbol
+ elapsed 1100
+ running 1101
+ lap_count 1102
+ previous 1103
+ command 1104
+ result 1105
+ ready 1106
+ main_passes 1107
+ laps 1200
+ durations 1220
+.code 0
+ mov r29 #3000
+ di #0
+ di #1
+ di #2
+ di #3
+ mov r1 #timer_isr
+ st r1 1000
+ mov r1 #button_isr
+ st r1 1002
+ mov r1 #1000
+ trap r1 #13
+ mov r1 #0
+ st r1 elapsed
+ st r1 running
+ st r1 lap_count
+ st r1 previous
+ st r1 command
+ st r1 result
+ st r1 main_passes
+ mov r2 #0
+:init_laps
+ st r1 @1200 r2
+ st r1 @1220 r2
+ add r2 r2 #1
+ lt r3 r2 #10
+ jt r3 init_laps
+ ei #0
+ ei #2
+ mov r1 #1
+ st r1 ready
+; WFI enables the master interrupt flag in this course simulator.
+:main_loop
+ ld r10 main_passes
+ add r10 r10 #1
+ st r10 main_passes
+ wfi
+ jmp main_loop
+; Save/restore r0-r15. Hardware saves the return PC in r31.
+; Interrupt nesting is disabled by the simulator during each ISR.
+:timer_isr
+ trap r29 #15
+ ld r1 running
+ jf r1 timer_done
+ ld r2 elapsed
+ add r2 r2 #1
+ st r2 elapsed
+:timer_done
+ trap r29 #16
+ reti
+; Command mailbox: 1=toggle start/pause, 2=lap, 3=reset.
+; Result: 1=started, 2=paused, 3=saved, 4=full, 5=not running,
+;         6=reset, 7=unknown command.
+:button_isr
+ trap r29 #15
+ ld r1 command
+ eq r2 r1 #1
+ jt r2 toggle
+ eq r2 r1 #2
+ jt r2 save_lap
+ eq r2 r1 #3
+ jt r2 reset
+ mov r1 #7
+ st r1 result
+ jmp button_done
+:toggle
+ ld r1 running
+ jf r1 start
+ mov r1 #0
+ st r1 running
+ mov r1 #2
+ st r1 result
+ jmp button_done
+:start
+ mov r1 #1
+ st r1 running
+ st r1 result
+ jmp button_done
+:save_lap
+ ld r1 running
+ jf r1 not_running
+ ld r2 lap_count
+ lt r3 r2 #10
+ jf r3 buffer_full
+; Snapshot current elapsed ticks. Timer ISR cannot interrupt this ISR.
+ ld r1 elapsed
+ st r1 @1200 r2
+ ld r3 previous
+ sub r4 r1 r3
+ st r4 @1220 r2
+ st r1 previous
+; Publish count only after both values have been stored.
+ add r2 r2 #1
+ st r2 lap_count
+ mov r1 #3
+ st r1 result
+ jmp button_done
+:not_running
+ mov r1 #5
+ st r1 result
+ jmp button_done
+:buffer_full
+ mov r1 #4
+ st r1 result
+ jmp button_done
+:reset
+ mov r1 #0
+ st r1 running
+ st r1 elapsed
+ st r1 lap_count
+ st r1 previous
+ mov r2 #0
+:clear_laps
+ st r1 @1200 r2
+ st r1 @1220 r2
+ add r2 r2 #1
+ lt r3 r2 #10
+ jt r3 clear_laps
+ mov r1 #6
+ st r1 result
+:button_done
+ mov r1 #0
+ st r1 command
+ trap r29 #16
+ reti
+.data 1100
+0 0 0 0 0 0 0 0
+.data 1200
+0 0 0 0 0 0 0 0 0 0
+.data 1220
+0 0 0 0 0 0 0 0 0 0
+.end

@@ -1,0 +1,670 @@
+.symbol
+.code 0
+0  mov fp #3500
+1  mov sp #3000
+2  jal rads main
+3  trap r0 #0
+:newp
+4 st r1 @1 fp
+5 add fp fp #2
+6 st rads @0 fp
+7 mov r1 #16
+8 trap r1 #19
+9 mov retval r28
+10 jmp L101
+:L101
+11 ld rads @0 fp
+12 sub fp fp #2
+13 ld r1 @1 fp
+14 ret rads
+:newStack
+15 st r1 @1 fp
+16 add fp fp #2
+17 st rads @0 fp
+18 mov r1 #64
+19 trap r1 #19
+20 mov retval r28
+21 jmp L102
+:L102
+22 ld rads @0 fp
+23 sub fp fp #2
+24 ld r1 @1 fp
+25 ret rads
+:newFrame
+26 st r1 @1 fp
+27 add fp fp #2
+28 st rads @0 fp
+29 mov r1 #64
+30 trap r1 #19
+31 mov retval r28
+32 jmp L103
+:L103
+33 ld rads @0 fp
+34 sub fp fp #2
+35 ld r1 @1 fp
+36 ret rads
+:new
+37 st r1 @1 fp
+38 st r2 @2 fp
+39 st r3 @3 fp
+40 st r4 @4 fp
+41 add fp fp #5
+42 st rads @0 fp
+43 pop sp r1
+44 ld r3 freelist
+45 eq r4 r3 #0
+46 jf r4 L105
+47 mov r3 #2
+48 trap r3 #19
+49 mov r2 r28
+50 jmp L106
+:L105
+51 ld r2 freelist
+52 mov r4 #1
+53 ld r3 +r2 r4
+54 st r3 freelist
+:L106
+55 mov r3 #0
+56 st r1 +r2 r3
+57 mov r3 #0
+58 mov r4 #1
+59 st r3 +r2 r4
+60 mov retval r2
+61 jmp L104
+:L104
+62 ld rads @0 fp
+63 sub fp fp #5
+64 ld r4 @4 fp
+65 ld r3 @3 fp
+66 ld r2 @2 fp
+67 ld r1 @1 fp
+68 ret rads
+:appendL
+69 st r1 @1 fp
+70 st r2 @2 fp
+71 st r3 @3 fp
+72 st r4 @4 fp
+73 st r5 @5 fp
+74 add fp fp #6
+75 st rads @0 fp
+76 pop sp r2
+77 pop sp r1
+78 mov r5 #0
+79 ld r4 +r1 r5
+80 eq r5 r4 #0
+81 jf r5 L108
+82 mov r4 #0
+83 st r2 +r1 r4
+84 jmp L109
+:L108
+85 mov r5 #1
+86 ld r4 +r1 r5
+87 mov r3 r4
+88 mov r4 #1
+89 st r2 +r3 r4
+:L109
+90 mov r4 #1
+91 st r2 +r1 r4
+92 mov r5 #0
+93 ld r4 +r1 r5
+94 mov r5 #1
+95 st r4 +r2 r5
+:L107
+96 ld rads @0 fp
+97 sub fp fp #6
+98 ld r5 @5 fp
+99 ld r4 @4 fp
+100 ld r3 @3 fp
+101 ld r2 @2 fp
+102 ld r1 @1 fp
+103 ret rads
+:enqueue
+104 st r1 @1 fp
+105 st r2 @2 fp
+106 add fp fp #3
+107 st rads @0 fp
+108 pop sp r2
+109 pop sp r1
+110 push sp r1
+111 push sp r2
+112 jal rads new
+113 push sp r28
+114 jal rads appendL
+:L110
+115 ld rads @0 fp
+116 sub fp fp #3
+117 ld r2 @2 fp
+118 ld r1 @1 fp
+119 ret rads
+:dequeueQ
+120 st r1 @1 fp
+121 st r2 @2 fp
+122 st r3 @3 fp
+123 add fp fp #4
+124 st rads @0 fp
+125 ld r2 nump
+126 sub r3 r2 #1
+127 st r3 nump
+128 ld r1 currentp
+129 mov r2 #0
+130 mov r3 #3
+131 st r2 +r1 r3
+:L111
+132 ld rads @0 fp
+133 sub fp fp #4
+134 ld r3 @3 fp
+135 ld r2 @2 fp
+136 ld r1 @1 fp
+137 ret rads
+:createp
+138 st r1 @1 fp
+139 st r2 @2 fp
+140 st r3 @3 fp
+141 st r4 @4 fp
+142 add fp fp #5
+143 st rads @0 fp
+144 pop sp r1
+145 jal rads newp
+146 mov r2 r28
+147 mov r3 #0
+148 st r1 +r2 r3
+149 jal rads newStack
+150 add r3 r28 #16
+151 mov r4 #1
+152 st r3 +r2 r4
+153 jal rads newFrame
+154 mov r3 #2
+155 st r28 +r2 r3
+156 mov r3 #1
+157 mov r4 #3
+158 st r3 +r2 r4
+159 ld r3 Q
+160 push sp r3
+161 push sp r2
+162 jal rads enqueue
+163 ld r3 nump
+164 add r4 r3 #1
+165 st r4 nump
+166 mov retval r2
+167 jmp L112
+:L112
+168 ld rads @0 fp
+169 sub fp fp #5
+170 ld r4 @4 fp
+171 ld r3 @3 fp
+172 ld r2 @2 fp
+173 ld r1 @1 fp
+174 ret rads
+:nextQ
+175 st r1 @1 fp
+176 st r2 @2 fp
+177 st r3 @3 fp
+178 add fp fp #4
+179 st rads @0 fp
+180 mov r2 #1
+181 ld r3 qq
+182 ld r1 +r3 r2
+183 st r1 qq
+184 mov r2 #0
+185 ld r3 qq
+186 ld r1 +r3 r2
+187 mov retval r1
+188 jmp L113
+:L113
+189 ld rads @0 fp
+190 sub fp fp #4
+191 ld r3 @3 fp
+192 ld r2 @2 fp
+193 ld r1 @1 fp
+194 ret rads
+:nextp
+195 st r1 @1 fp
+196 st r2 @2 fp
+197 st r3 @3 fp
+198 add fp fp #4
+199 st rads @0 fp
+200 jal rads nextQ
+201 mov r1 r28
+202 jmp L115
+:L116
+203 jal rads nextQ
+204 mov r1 r28
+:L115
+205 mov r3 #3
+206 ld r2 +r1 r3
+207 eq r3 r2 #0
+208 jt r3 L116
+209 mov retval r1
+210 jmp L114
+:L114
+211 ld rads @0 fp
+212 sub fp fp #4
+213 ld r3 @3 fp
+214 ld r2 @2 fp
+215 ld r1 @1 fp
+216 ret rads
+:terminate
+217 add fp fp #1
+218 st rads @0 fp
+219 di #0
+220 jal rads dequeueQ
+221 int #0
+:L117
+222 ld rads @0 fp
+223 sub fp fp #1
+224 ret rads
+:int0
+225 di #0
+226 trap sp #15
+227 push sp rads
+228 push sp retval
+229 ld r1 currentp
+230 st r31 @0 r1
+231 st sp @1 r1
+232 st fp @2 r1
+233 ld r1 nump
+234 eq r2 r1 #0
+235 jf r2 L119
+236 trap r0 #0
+:L119
+237 jal rads nextp
+238 st r28 currentp
+239 ld r1 currentp
+240 ld r31 @0 r1
+241 ld sp @1 r1
+242 ld fp @2 r1
+243 pop sp retval
+244 pop sp rads
+245 trap sp #16
+:L118
+246 reti
+:boot
+247 add fp fp #1
+248 st rads @0 fp
+249 jal rads newp
+250 st r28 currentp
+251 int #0
+:L120
+252 ld rads @0 fp
+253 sub fp fp #1
+254 ret rads
+:free
+255 st r1 @1 fp
+256 st r2 @2 fp
+257 st r3 @3 fp
+258 add fp fp #4
+259 st rads @0 fp
+260 pop sp r1
+261 ld r2 freelist
+262 mov r3 #1
+263 st r2 +r1 r3
+264 st r1 freelist
+:L121
+265 ld rads @0 fp
+266 sub fp fp #4
+267 ld r3 @3 fp
+268 ld r2 @2 fp
+269 ld r1 @1 fp
+270 ret rads
+:dequeue
+271 st r1 @1 fp
+272 st r2 @2 fp
+273 st r3 @3 fp
+274 st r4 @4 fp
+275 st r5 @5 fp
+276 st r6 @6 fp
+277 st r7 @7 fp
+278 add fp fp #8
+279 st rads @0 fp
+280 pop sp r1
+281 mov r7 #0
+282 ld r6 +r1 r7
+283 mov r2 r6
+284 mov r7 #1
+285 ld r6 +r1 r7
+286 mov r3 r6
+287 eq r6 r2 r3
+288 jf r6 L123
+289 mov r6 #0
+290 mov r7 #0
+291 st r6 +r1 r7
+292 mov r6 #0
+293 mov r7 #1
+294 st r6 +r1 r7
+295 jmp L124
+:L123
+296 mov r7 #1
+297 ld r6 +r2 r7
+298 mov r4 r6
+299 mov r6 #0
+300 st r4 +r1 r6
+301 mov r6 #1
+302 st r4 +r3 r6
+:L124
+303 mov r7 #0
+304 ld r6 +r2 r7
+305 mov r5 r6
+306 push sp r2
+307 jal rads free
+308 mov retval r5
+309 jmp L122
+:L122
+310 ld rads @0 fp
+311 sub fp fp #8
+312 ld r7 @7 fp
+313 ld r6 @6 fp
+314 ld r5 @5 fp
+315 ld r4 @4 fp
+316 ld r3 @3 fp
+317 ld r2 @2 fp
+318 ld r1 @1 fp
+319 ret rads
+:blockp
+320 st r1 @1 fp
+321 add fp fp #2
+322 st rads @0 fp
+323 mov r1 #42
+324 trap r1 #2
+325 ld r1 currentp
+326 trap r1 #1
+327 jal rads dequeueQ
+328 int #0
+:L125
+329 ld rads @0 fp
+330 sub fp fp #2
+331 ld r1 @1 fp
+332 ret rads
+:wakeup
+333 st r1 @1 fp
+334 st r2 @2 fp
+335 st r3 @3 fp
+336 add fp fp #4
+337 st rads @0 fp
+338 pop sp r1
+339 mov r2 #33
+340 trap r2 #2
+341 trap r1 #1
+342 ld r2 nump
+343 add r3 r2 #1
+344 st r3 nump
+345 mov r2 #1
+346 mov r3 #3
+347 st r2 +r1 r3
+:L126
+348 ld rads @0 fp
+349 sub fp fp #4
+350 ld r3 @3 fp
+351 ld r2 @2 fp
+352 ld r1 @1 fp
+353 ret rads
+:newsem
+354 st r1 @1 fp
+355 st r2 @2 fp
+356 st r3 @3 fp
+357 add fp fp #4
+358 st rads @0 fp
+359 pop sp r1
+360 mov r3 #2
+361 trap r3 #19
+362 mov r2 r28
+363 mov r3 #0
+364 st r1 +r2 r3
+365 mov r3 #0
+366 push sp r3
+367 jal rads new
+368 mov r3 #1
+369 st r28 +r2 r3
+370 mov retval r2
+371 jmp L127
+:L127
+372 ld rads @0 fp
+373 sub fp fp #4
+374 ld r3 @3 fp
+375 ld r2 @2 fp
+376 ld r1 @1 fp
+377 ret rads
+:wait
+378 st r1 @1 fp
+379 st r2 @2 fp
+380 st r3 @3 fp
+381 add fp fp #4
+382 st rads @0 fp
+383 pop sp r1
+384 di #0
+385 mov r3 #0
+386 ld r2 +r1 r3
+387 sub r3 r2 #1
+388 mov r2 #0
+389 st r3 +r1 r2
+390 mov r3 #0
+391 ld r2 +r1 r3
+392 lt r3 r2 #0
+393 jf r3 L129
+394 mov r3 #1
+395 ld r2 +r1 r3
+396 push sp r2
+397 ld r2 currentp
+398 push sp r2
+399 jal rads enqueue
+400 jal rads blockp
+401 jmp L130
+:L129
+402 ei #0
+:L130
+:L128
+403 ld rads @0 fp
+404 sub fp fp #4
+405 ld r3 @3 fp
+406 ld r2 @2 fp
+407 ld r1 @1 fp
+408 ret rads
+:signal
+409 st r1 @1 fp
+410 st r2 @2 fp
+411 st r3 @3 fp
+412 st r4 @4 fp
+413 add fp fp #5
+414 st rads @0 fp
+415 pop sp r1
+416 di #0
+417 mov r4 #0
+418 ld r3 +r1 r4
+419 add r4 r3 #1
+420 mov r3 #0
+421 st r4 +r1 r3
+422 mov r4 #0
+423 ld r3 +r1 r4
+424 le r4 r3 #0
+425 jf r4 L132
+426 mov r4 #1
+427 ld r3 +r1 r4
+428 push sp r3
+429 jal rads dequeue
+430 mov r2 r28
+431 push sp r2
+432 jal rads wakeup
+:L132
+433 ei #0
+:L131
+434 ld rads @0 fp
+435 sub fp fp #5
+436 ld r4 @4 fp
+437 ld r3 @3 fp
+438 ld r2 @2 fp
+439 ld r1 @1 fp
+440 ret rads
+:reader
+441 st r1 @1 fp
+442 add fp fp #2
+443 st rads @0 fp
+444 jmp L134
+:L135
+445 ld r1 full
+446 push sp r1
+447 jal rads wait
+448 mov r1 #43
+449 trap r1 #2
+450 ld r1 cnt1
+451 trap r1 #1
+452 ld r1 empty
+453 push sp r1
+454 jal rads signal
+:L134
+455 mov r1 #1
+456 jt r1 L135
+:L133
+457 ld rads @0 fp
+458 sub fp fp #2
+459 ld r1 @1 fp
+460 ret rads
+:writer
+461 st r1 @1 fp
+462 st r2 @2 fp
+463 add fp fp #3
+464 st rads @0 fp
+465 mov r1 #0
+466 st r1 cnt1
+467 jmp L137
+:L138
+468 ld r1 empty
+469 push sp r1
+470 jal rads wait
+471 ld r1 cnt1
+472 add r2 r1 #1
+473 st r2 cnt1
+474 ld r1 cnt1
+475 trap r1 #1
+476 ld r1 full
+477 push sp r1
+478 jal rads signal
+:L137
+479 mov r1 #1
+480 jt r1 L138
+:L136
+481 ld rads @0 fp
+482 sub fp fp #3
+483 ld r2 @2 fp
+484 ld r1 @1 fp
+485 ret rads
+:printqueue
+486 st r1 @1 fp
+487 st r2 @2 fp
+488 st r3 @3 fp
+489 st r4 @4 fp
+490 st r5 @5 fp
+491 st r6 @6 fp
+492 st r7 @7 fp
+493 add fp fp #8
+494 st rads @0 fp
+495 mov r6 #0
+496 ld r7 Q
+497 ld r5 +r7 r6
+498 mov r1 r5
+499 mov r6 #1
+500 ld r7 Q
+501 ld r5 +r7 r6
+502 mov r2 r5
+503 mov r6 #0
+504 ld r5 +r1 r6
+505 mov r3 r5
+506 mov r6 #0
+507 ld r5 +r2 r6
+508 mov r4 r5
+509 mov r5 #81
+510 trap r5 #2
+511 mov r5 #32
+512 trap r5 #2
+513 trap r3 #1
+514 trap r4 #1
+515 mov r5 #10
+516 trap r5 #2
+517 mov r5 #112
+518 trap r5 #2
+519 mov r5 #99
+520 trap r5 #2
+521 mov r5 #98
+522 trap r5 #2
+523 mov r5 #32
+524 trap r5 #2
+525 trap r3 #1
+526 mov r6 #0
+527 ld r5 +r3 r6
+528 trap r5 #1
+529 mov r5 #10
+530 trap r5 #2
+531 mov r5 #112
+532 trap r5 #2
+533 mov r5 #99
+534 trap r5 #2
+535 mov r5 #98
+536 trap r5 #2
+537 mov r5 #32
+538 trap r5 #2
+539 trap r4 #1
+540 mov r6 #0
+541 ld r5 +r4 r6
+542 trap r5 #1
+543 mov r5 #10
+544 trap r5 #2
+:L139
+545 ld rads @0 fp
+546 sub fp fp #8
+547 ld r7 @7 fp
+548 ld r6 @6 fp
+549 ld r5 @5 fp
+550 ld r4 @4 fp
+551 ld r3 @3 fp
+552 ld r2 @2 fp
+553 ld r1 @1 fp
+554 ret rads
+:main
+555 st r1 @1 fp
+556 st r2 @2 fp
+557 st r3 @3 fp
+558 st r4 @4 fp
+559 add fp fp #5
+560 st rads @0 fp
+561 mov r1 #int0
+562 st r1 1000
+563 di #0
+564 mov r2 #0
+565 st r2 nump
+566 mov r2 #0
+567 st r2 freelist
+568 mov r2 #2
+569 trap r2 #19
+570 st r28 Q
+571 mov r2 #reader
+572 push sp r2
+573 jal rads createp
+574 mov r1 r28
+575 mov r2 #writer
+576 push sp r2
+577 jal rads createp
+578 mov r1 r28
+579 mov r3 #0
+580 ld r4 Q
+581 ld r2 +r4 r3
+582 st r2 qq
+583 jal rads printqueue
+584 mov r2 #0
+585 push sp r2
+586 jal rads newsem
+587 st r28 full
+588 mov r2 #1
+589 push sp r2
+590 jal rads newsem
+591 st r28 empty
+592 mov r2 #300
+593 trap r2 #13
+594 jal rads boot
+:L140
+595 ld rads @0 fp
+596 sub fp fp #5
+597 ld r4 @4 fp
+598 ld r3 @3 fp
+599 ld r2 @2 fp
+600 ld r1 @1 fp
+601 ret rads
+.data 200
+.end

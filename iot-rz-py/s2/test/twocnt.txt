@@ -1,0 +1,41 @@
+
+.symbol
+cnt1 100
+cnt2 101
+stop 0
+.code 0
+:main
+mov r1 #count1
+st r1 1000
+mov r1 #1       ; the first process starts counting from 1
+st r1 cnt1
+mov r1 #11       ; the second process counts from 11
+st r1 cnt2
+mov r2 #0       ; init i
+:while
+swi
+add r2 r2 #1     ; inc i
+lt r3 r2 #10     ;  loop 10 times   
+jt r3 while
+trap r0 #stop
+
+;  interrupt service routine1
+:count1
+ld r4 cnt1       
+trap r4 #1        ; print cnt1
+add r4 r4 #1      ; cnt1 += 1
+st r4 cnt1 
+mov r4 #count2    ; switch int vec
+st r4 1000
+reti
+
+; interrupt service routine2
+:count2
+ld r4 cnt2
+trap r4 #1         ; print cnt2
+add r4 r4 #1       ; cnt2 += 2
+st r4 cnt2
+mov r4 #count1     ; switch int vec
+st r4 1000
+reti
+.end

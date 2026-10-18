@@ -1,0 +1,6 @@
+// input and print string
+
+main()
+  asm("di #0")
+  s = input()
+  prints(s)

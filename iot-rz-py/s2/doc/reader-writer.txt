@@ -1,0 +1,21 @@
+writer()
+  i = 0
+  while( i < 5 )
+    wait(empty)
+    wait(mutex)
+    shareVar = shareVar + 1
+    signal(mutex)
+    i = i + 1
+    signal(full)
+  terminate()
+
+reader()
+  i = 0
+  while( i < 5 )
+    wait(full)
+    wait(mutex)
+    print("+",shareVar)
+    signal(mutex)
+    i = i + 1
+    signal(empty)
+  terminate()

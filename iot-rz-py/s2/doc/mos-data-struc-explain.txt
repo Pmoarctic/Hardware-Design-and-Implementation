@@ -1,0 +1,46 @@
+MOS  Data Structure
+
+Process Control Block
+
+has 3 fields: PC,SP,FP
+SP point to local stack
+FP point to local frame
+
+process queue is a singly linked circular list
+where the end of list points to the first item in the list
+a node stores pointer to PCB
+
+there is no "list header"
+
+the head of the list is kept in qindex
+the list is array of int Q[.] 
+
+because it is a singly linked list, append/ and delete/ need to traverse the list.  append/ needs to find the node before the end. delete/ needs to find the node before this node. Both needs to traverse the list while keeping the "previous" node pointer.
+
+traverse/
+  m = current
+  nx = Q[m+1]
+  p = nx         // this one is required in case single node
+  while nx != m
+    p = nx
+    nx = Q[p+1]
+
+p keeps the previous node
+
+append/          // need special case where queue is empty
+  n = create a new node
+  p = find previous node (start from current)
+  tail(n) = tail(p)
+  tail(p) = n
+  return current  // current does not change
+
+delete/ (at s)   // need special case when only one node
+  m = tail(s)    // queue after delete
+  p = find previous node (start from s)
+  tail(p) = m
+  return m
+
+waiting list of a semaphore can use this similar queue. It can share the same array Q[.] but has its own 'qindex'.
+
+7 Feb 2025
+
