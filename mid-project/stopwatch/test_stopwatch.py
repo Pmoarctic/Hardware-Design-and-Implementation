@@ -1,5 +1,7 @@
 """Behavior checks against assembled instructions on the course CPU."""
 import unittest
+from contextlib import redirect_stdout
+import io
 
 from simulator import (Machine, ELAPSED, RUNNING, COUNT, PREVIOUS, LAPS,
                        DURATIONS, COMMAND, RESULTS)
@@ -111,6 +113,45 @@ class StopwatchTests(unittest.TestCase):
         self.assertEqual([e["result"] for e in m.events], [1, 3, 3, 2, 5, 6])
         self.assertEqual(m.snapshot()["laps"], [])
         self.assertEqual(m.get(ELAPSED), 0)
+
+    def test_register_trace_matches_execution_and_restores_context(self):
+        with redirect_stdout(io.StringIO()):
+            m = Machine(trace_registers=True)
+            self.machine = m
+            self.button(1)
+            m.step(320_000)
+            m.register_trace.clear()
+            event = self.button(2)
+        trace = list(m.register_trace)
+        self.assertEqual(trace[0]["instruction"], "ENTER INT2")
+        self.assertEqual(trace[-1]["instruction"], "reti")
+        subtraction = next(s for s in trace if s["instruction"] == "sub r4 r1 r3")
+        self.assertEqual(subtraction["registers"][4], event["elapsed"])
+        saved = next(s for s in trace if s["instruction"] == "trap r29 #15")
+        self.assertEqual(saved["registers"][29], 3016)
+        self.assertEqual([saved["memory"][str(3001+i)] for i in range(16)], trace[0]["registers"][:16])
+        self.assertEqual(trace[-1]["registers"][:16], trace[0]["registers"][:16])
+        self.assertEqual(trace[-1]["registers"][29], 3000)
+        self.assertEqual(trace[-1]["next_pc"], trace[0]["registers"][31])
+
+    def test_button_completion_recorded_when_timer_pending_at_reti(self):
+        m = self.machine
+        m.request(1)
+        for _ in range(2000):
+            word = m.get(m.engine.PC)
+            if (m.active_button is not None and m.engine.intnum == 2
+                    and not m.engine.intflag and m.memory.IRop(word) == 31
+                    and m.memory.IRxop(word) == 27):
+                break
+            m.step(1)
+        else:
+            self.fail("Button ISR did not reach RETI")
+        m.cpu.intrq[0] = 1
+        m.step(1)
+        self.assertIsNone(m.active_button)
+        self.assertEqual(m.events[-1]["result"], 1)
+        self.assertEqual(m.engine.intnum, 0)
+        self.assertFalse(m.engine.intflag)
 
 
 if __name__ == "__main__":

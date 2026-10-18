@@ -1,0 +1,336 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: S2 ASSEMBLY / INTERRUPT DEMONSTRATION
+    - heading "หนึ่งคลิก → CPU ทำอะไรบ้าง?" [level=1] [ref=e5]
+    - paragraph [ref=e6]: คู่มือภาษาไทยสำหรับนำเสนอ Stopwatch 3–4 นาที พร้อมดูการเปลี่ยนค่ารีจิสเตอร์ทีละคำสั่ง ตั้งแต่เข้า Interrupt จนกลับจาก ISR
+  - navigation "สารบัญ" [ref=e7]:
+    - link "วิธีเปิดสาธิต" [ref=e8] [cursor=pointer]:
+      - /url: "#run"
+    - link "ดู Register" [ref=e9] [cursor=pointer]:
+      - /url: "#registers"
+    - link "หลักการที่ต้องรู้" [ref=e10] [cursor=pointer]:
+      - /url: "#knowledge"
+    - link "บทพูด 3–4 นาที" [ref=e11] [cursor=pointer]:
+      - /url: "#script"
+    - link "เตรียมตอบคำถาม" [ref=e12] [cursor=pointer]:
+      - /url: "#questions"
+  - generic [ref=e13]:
+    - heading "เปิด GUI พร้อม Terminal" [level=2] [ref=e14]
+    - code [ref=e16]: cd 'E:\CEDT\Hardware Design and Implementation\mid-project\stopwatch' python build.py python simulator.py --trace-registers
+    - paragraph [ref=e17]: วาง GUI กับ Terminal ข้างกัน แล้วกด Start → Lap → Lap → Pause → Start เพื่อ Resume → Reset ทีละปุ่ม แต่ละคลิกจะแสดงคำสั่ง Assembly ที่ CPU จำลองรันจริง พร้อมค่ารีจิสเตอร์และหน่วยความจำที่เปลี่ยน
+    - paragraph [ref=e18]:
+      - text: ใช้
+      - code [ref=e19]: python simulator.py
+      - text: เมื่อต้องการแสดงเฉพาะ REQUEST / ENTER / RETI แบบกระชับ ส่วนโหมดละเอียดจะพิมพ์หลายบรรทัดและอาจทำให้การจำลองช้าลง
+    - generic [ref=e20]:
+      - generic [ref=e21]: "REQUEST: เขียน command และส่ง IRQ2"
+      - generic [ref=e22]: "→ ENTER: CPU เข้า ISR"
+      - generic [ref=e23]: "→ STEP: ทำทีละคำสั่ง"
+      - generic [ref=e24]: "→ RETI: กลับไปทำงานต่อ"
+  - generic [ref=e25]:
+    - heading "ดูค่ารีจิสเตอร์ทีละขั้น" [level=2] [ref=e26]
+    - paragraph [ref=e27]:
+      - text: ข้อมูลบันทึกจาก CPU จำลองจริง — หน้านี้เล่นย้อนตัวอย่างที่ฝังไว้ใน HTML เปิดได้โดยไม่ใช้อินเทอร์เน็ต ไม่ได้เชื่อมกับ GUI ที่กำลังรันอยู่ หากต้องการค่าจากการกดปุ่มปัจจุบัน ให้ดู Terminal ในโหมด
+      - code [ref=e28]: "--trace-registers"
+    - generic [ref=e29]:
+      - generic [ref=e30]: "เหตุการณ์:"
+      - combobox "เหตุการณ์:" [ref=e31]:
+        - option "Start · เริ่มจับเวลา" [selected]
+        - option "Lap 1 · บันทึกรอบแรก"
+        - option "Lap 2 · คำนวณผลต่าง"
+        - option "Pause · หยุดชั่วคราว"
+        - option "Resume · ทำงานต่อ"
+        - option "Reset · ล้างเวลาและรอบ"
+        - option "Lap ขณะหยุด · ปฏิเสธคำสั่ง"
+      - button "เริ่มต้น" [disabled] [ref=e32]
+      - button "← ก่อนหน้า" [disabled] [ref=e33]
+      - button "▶ เล่นทีละขั้น" [ref=e34] [cursor=pointer]
+      - button "ถัดไป →" [ref=e35] [cursor=pointer]
+      - button "ไป RETI" [ref=e36] [cursor=pointer]
+    - paragraph [ref=e37]: "เริ่มจากสถานะหยุด: Assembly เปลี่ยน running จาก 0 เป็น 1"
+    - text: เลื่อนเลือกคำสั่ง
+    - slider "ลำดับคำสั่ง" [ref=e38]: "0"
+    - generic [ref=e39]:
+      - generic [ref=e40]: ขั้น 1 / 15
+      - generic [ref=e41]: cycle 79
+      - generic [ref=e42]: PC 33 → 42
+      - generic [ref=e43]: INT_ENABLE 0
+    - generic [ref=e44]: ENTER INT2
+    - paragraph [ref=e45]: "CPU รับ IRQ2: เก็บตำแหน่งกลับใน r31 แล้วเปลี่ยน PC ไปยัง Button ISR; ยังไม่ได้เก็บ r0–r15 ลง Stack"
+    - paragraph [ref=e46]:
+      - generic [ref=e47]: สีเหลือง = ค่าที่เปลี่ยนในขั้นนี้
+      - text: ตัวเลขเป็นฐานสิบ ลูกศรแสดงค่าก่อน → หลัง ส่วนค่าไม่เปลี่ยนแสดงเพียงค่าเดียว
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - strong [ref=e50]: r0
+        - generic [ref=e51]: "0"
+      - generic [ref=e52]:
+        - strong [ref=e53]: r1
+        - generic [ref=e54]: "1"
+      - generic [ref=e55]:
+        - strong [ref=e56]: r2
+        - generic [ref=e57]: "10"
+      - generic [ref=e58]:
+        - strong [ref=e59]: r3
+        - generic [ref=e60]: "0"
+      - generic [ref=e61]:
+        - strong [ref=e62]: r4
+        - generic [ref=e63]: "0"
+      - generic [ref=e64]:
+        - strong [ref=e65]: r5
+        - generic [ref=e66]: "0"
+      - generic [ref=e67]:
+        - strong [ref=e68]: r6
+        - generic [ref=e69]: "0"
+      - generic [ref=e70]:
+        - strong [ref=e71]: r7
+        - generic [ref=e72]: "0"
+      - generic [ref=e73]:
+        - strong [ref=e74]: r8
+        - generic [ref=e75]: "0"
+      - generic [ref=e76]:
+        - strong [ref=e77]: r9
+        - generic [ref=e78]: "0"
+      - generic [ref=e79]:
+        - strong [ref=e80]: r10
+        - generic [ref=e81]: "1"
+      - generic [ref=e82]:
+        - strong [ref=e83]: r11
+        - generic [ref=e84]: "0"
+      - generic [ref=e85]:
+        - strong [ref=e86]: r12
+        - generic [ref=e87]: "0"
+      - generic [ref=e88]:
+        - strong [ref=e89]: r13
+        - generic [ref=e90]: "0"
+      - generic [ref=e91]:
+        - strong [ref=e92]: r14
+        - generic [ref=e93]: "0"
+      - generic [ref=e94]:
+        - strong [ref=e95]: r15
+        - generic [ref=e96]: "0"
+      - generic [ref=e97]:
+        - strong [ref=e98]: r29 · SP
+        - generic [ref=e99]: "3000"
+      - generic [ref=e100]:
+        - strong [ref=e101]: r31 · return PC
+        - generic [ref=e102]: 0 → 33
+    - group [ref=e103]:
+      - generic "ดูรีจิสเตอร์ r16–r30 ที่เหลือ" [ref=e104] [cursor=pointer]
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - heading "ข้อมูล Stopwatch ใน RAM" [level=3] [ref=e107]
+        - table [ref=e109]:
+          - rowgroup [ref=e110]:
+            - row [ref=e111]:
+              - columnheader "Address / ตัวแปร" [ref=e112]
+              - columnheader "ค่า" [ref=e113]
+          - rowgroup [ref=e114]:
+            - row [ref=e115]:
+              - cell "1100 · elapsed" [ref=e116]
+              - cell "0" [ref=e117]
+            - row [ref=e118]:
+              - cell "1101 · running" [ref=e119]
+              - cell "0" [ref=e120]
+            - row [ref=e121]:
+              - cell "1102 · lap_count" [ref=e122]
+              - cell "0" [ref=e123]
+            - row [ref=e124]:
+              - cell "1103 · previous" [ref=e125]
+              - cell "0" [ref=e126]
+            - row [ref=e127]:
+              - cell "1104 · command" [ref=e128]
+              - cell "1" [ref=e129]
+            - row [ref=e130]:
+              - cell "1105 · result" [ref=e131]
+              - cell "0" [ref=e132]
+            - row [ref=e133]:
+              - cell "1106 · ready" [ref=e134]
+              - cell "1" [ref=e135]
+            - row [ref=e136]:
+              - cell "1107 · main_passes" [ref=e137]
+              - cell "1" [ref=e138]
+      - generic [ref=e139]:
+        - heading "Lap และระยะเวลา" [level=3] [ref=e140]
+        - paragraph [ref=e141]: "หน่วยเป็น Tick: 100 Tick = เวลาที่แสดง 1 วินาที"
+        - table [ref=e143]:
+          - rowgroup [ref=e144]:
+            - row [ref=e145]:
+              - columnheader "ช่อง" [ref=e146]
+              - columnheader "เวลาสะสม" [ref=e147]
+              - columnheader "ระยะรอบ" [ref=e148]
+          - rowgroup [ref=e149]:
+            - row [ref=e150]:
+              - cell "1" [ref=e151]
+              - cell "0" [ref=e152]
+              - cell "0" [ref=e153]
+            - row [ref=e154]:
+              - cell "2" [ref=e155]
+              - cell "0" [ref=e156]
+              - cell "0" [ref=e157]
+            - row [ref=e158]:
+              - cell "3" [ref=e159]
+              - cell "0" [ref=e160]
+              - cell "0" [ref=e161]
+            - row [ref=e162]:
+              - cell "4" [ref=e163]
+              - cell "0" [ref=e164]
+              - cell "0" [ref=e165]
+            - row [ref=e166]:
+              - cell "5" [ref=e167]
+              - cell "0" [ref=e168]
+              - cell "0" [ref=e169]
+            - row [ref=e170]:
+              - cell "6" [ref=e171]
+              - cell "0" [ref=e172]
+              - cell "0" [ref=e173]
+            - row [ref=e174]:
+              - cell "7" [ref=e175]
+              - cell "0" [ref=e176]
+              - cell "0" [ref=e177]
+            - row [ref=e178]:
+              - cell "8" [ref=e179]
+              - cell "0" [ref=e180]
+              - cell "0" [ref=e181]
+            - row [ref=e182]:
+              - cell "9" [ref=e183]
+              - cell "0" [ref=e184]
+              - cell "0" [ref=e185]
+            - row [ref=e186]:
+              - cell "10" [ref=e187]
+              - cell "0" [ref=e188]
+              - cell "0" [ref=e189]
+    - group [ref=e190]:
+      - generic "ดู Stack ที่เก็บ r0–r15 (RAM 3001–3016)" [ref=e191] [cursor=pointer]
+    - paragraph [ref=e192]: "ประโยคที่ใช้ชี้อธิบาย: “รีจิสเตอร์เป็นพื้นที่ทำงานชั่วคราวของ ISR จึงเปลี่ยนระหว่างประมวลผล แล้วคืนค่าเดิมก่อน RETI ส่วนผลลัพธ์ที่ต้องเก็บต่อ เช่น running และ lap_count จะถูกเขียนลง RAM”"
+  - generic [ref=e193]:
+    - heading "หลักการที่ต้องรู้" [level=2] [ref=e194]
+    - generic [ref=e195]:
+      - generic [ref=e196]:
+        - heading "แบ่งหน้าที่อย่างไร?" [level=3] [ref=e197]
+        - paragraph [ref=e198]: "Python: จำลอง CPU, Timer, การส่งคำขอ Interrupt และ GUI โดย GUI อ่าน RAM มาแสดงผล"
+        - paragraph [ref=e199]: "S2 Assembly: ตรวจสถานะ เพิ่มเวลาสะสม เริ่ม/หยุด บันทึกรอบ คำนวณระยะรอบ ตรวจความจุ และรีเซ็ต"
+        - paragraph [ref=e200]:
+          - text: "INT0: Timer ขอ Interrupt ทุก 1,000 simulated cycles ถ้า"
+          - code [ref=e201]: running = 1
+          - text: จึงเพิ่ม
+          - code [ref=e202]: elapsed
+          - text: หนึ่ง Tick
+        - paragraph [ref=e203]: "INT2: ปุ่มส่งคำสั่งผ่าน RAM[1104]: 1 = Start/Pause, 2 = Lap, 3 = Reset"
+      - generic [ref=e204]:
+        - heading "รีจิสเตอร์แต่ละตัวทำอะไร?" [level=3] [ref=e205]
+        - list [ref=e206]:
+          - listitem [ref=e207]: "PC: ตำแหน่งคำสั่ง ไม่ใช่หนึ่งใน r0–r31"
+          - listitem [ref=e208]: "r31: CPU เก็บ PC ที่จะกลับเมื่อรับ Interrupt"
+          - listitem [ref=e209]: "r29: Stack Pointer เริ่มที่ 3000"
+          - listitem [ref=e210]: "r0–r15: ISR เก็บก่อนใช้และคืนค่าตอนจบ"
+          - listitem [ref=e211]: "r1: ใช้อ่าน command / สถานะ / เวลา / ผลลัพธ์ตามช่วงคำสั่ง"
+          - listitem [ref=e212]: "r2: ใช้เปรียบเทียบคำสั่ง จำนวนรอบ และดัชนีวนลูป"
+          - listitem [ref=e213]: "r3: ใช้ผลเปรียบเทียบและเวลารอบก่อนหน้า"
+          - listitem [ref=e214]: "r4: ใช้เก็บผลต่างเวลาของรอบ"
+    - table [ref=e216]:
+      - rowgroup [ref=e217]:
+        - row [ref=e218]:
+          - columnheader "ขั้นตอน" [ref=e219]
+          - columnheader "สิ่งที่เกิดขึ้น" [ref=e220]
+          - columnheader "จุดที่ควรชี้" [ref=e221]
+      - rowgroup [ref=e222]:
+        - row [ref=e223]:
+          - cell "เข้า Interrupt" [ref=e224]
+          - cell "CPU เก็บ return PC ใน r31 แล้วอ่านตำแหน่ง ISR จาก vector RAM[1002]" [ref=e225]
+          - cell "PC เปลี่ยนไปที่ button ISR; ปิดการรับ Interrupt ซ้อน" [ref=e226]
+        - row [ref=e227]:
+          - cell [ref=e228]:
+            - code [ref=e229]: "trap r29 #15"
+          - cell "เก็บ r0–r15 จำนวน 16 ค่า ลง Stack" [ref=e230]
+          - 'cell "r29: 3000 → 3016" [ref=e231]'
+        - row [ref=e232]:
+          - cell "จัดการปุ่ม" [ref=e233]
+          - cell "อ่าน command แล้วเลือก Start/Pause, Lap หรือ Reset" [ref=e234]
+          - cell "r1–r4 และ RAM เปลี่ยนตามคำสั่งจริง" [ref=e235]
+        - row [ref=e236]:
+          - cell [ref=e237]:
+            - code [ref=e238]: "trap r29 #16"
+          - cell "คืนค่า r0–r15 จาก Stack" [ref=e239]
+          - 'cell "r29: 3016 → 3000; ค่ารีจิสเตอร์กลับเหมือนก่อน ISR" [ref=e240]'
+        - row [ref=e241]:
+          - cell [ref=e242]:
+            - code [ref=e243]: reti
+          - cell "ตั้ง PC จาก r31 และเปิดการรับ Interrupt อีกครั้ง" [ref=e244]
+          - cell "กลับไปทำงานต่อ; หากมีคำขอรออยู่ CPU อาจรับต่อทันที" [ref=e245]
+    - paragraph [ref=e246]:
+      - text: r31 ไม่ได้คืนค่าเดิมแบบ r0–r15 เพราะเป็นที่เก็บตำแหน่งกลับของ Interrupt ครั้งนี้ ส่วน
+      - code [ref=e247]: INT_ENABLE
+      - text: ที่แสดงคือสถานะรับ Interrupt ภายในตัวจำลอง ไม่ใช่รีจิสเตอร์ r ตัวหนึ่ง
+    - heading "คำสั่งที่อ่านแล้วควรเข้าใจ" [level=3] [ref=e248]
+    - paragraph [ref=e249]:
+      - code [ref=e250]: ld
+      - text: อ่านจาก RAM เข้ารีจิสเตอร์ ·
+      - code [ref=e251]: st
+      - text: เขียนจากรีจิสเตอร์ลง RAM ·
+      - code [ref=e252]: mov
+      - text: กำหนดค่า ·
+      - code [ref=e253]: eq / lt
+      - text: เปรียบเทียบ ได้ 1 หรือ 0 ·
+      - code [ref=e254]: jt / jf
+      - text: กระโดดตามเงื่อนไข ·
+      - code [ref=e255]: sub
+      - text: ลบ ·
+      - code [ref=e256]: wfi
+      - text: รอ Interrupt
+    - paragraph [ref=e257]:
+      - text: "ตัวอย่าง Lap:"
+      - code [ref=e258]: sub r4 r1 r3
+      - text: หมายถึง r4 = เวลาปัจจุบัน − เวลารอบก่อนหน้า จากนั้นเขียนผลลงตาราง durations ใน RAM
+  - generic [ref=e259]:
+    - heading "บทพูดพร้อมสาธิต 3–4 นาที" [level=2] [ref=e260]
+    - paragraph [ref=e261]: ซ้อมพร้อมจับเวลา ปรับคำลงท้ายตามผู้พูด และเลือกชี้เพียง 3–4 จุดสำคัญของ Register เพื่อให้ทันเวลา
+    - generic [ref=e262]:
+      - generic [ref=e263]: 0:00–0:35 · ภาพรวม
+      - paragraph [ref=e264]: “โปรเจกต์นี้เป็นนาฬิกาจับเวลาที่เริ่ม หยุดชั่วคราว ทำงานต่อ บันทึกรอบได้สูงสุด 10 รอบ และรีเซ็ตได้ ส่วนการจัดการเวลาและรอบเขียนด้วย S2 Assembly ส่วน Python จำลอง CPU และแสดงผล จุดสำคัญคือการใช้ Interrupt จาก Timer และปุ่มกด”
+    - generic [ref=e265]:
+      - generic [ref=e266]: 0:35–1:10 · Timer Interrupt
+      - generic [ref=e267]: กด Start และชี้เวลาที่เพิ่มขึ้น
+      - paragraph [ref=e268]: “Interrupt ทำให้ CPU พักงานปกติชั่วคราวแล้วไปทำชุดคำสั่งจัดการเหตุการณ์ เรียกว่า ISR ในที่นี้ Timer ส่ง INT0 ทุก 1,000 cycles ของ CPU จำลอง ถ้ากำลังจับเวลา ISR จะเพิ่มเวลาหนึ่ง Tick ซึ่งแสดงเป็น 0.01 วินาที ลูปหลักใช้ WFI เพื่อรอ Interrupt”
+    - generic [ref=e269]:
+      - generic [ref=e270]: 1:10–2:05 · ปุ่มและรีจิสเตอร์
+      - generic [ref=e271]: "กด Lap แล้วชี้ REQUEST / ENTER / trap #15 / trap #16 / RETI ใน Terminal หรือใช้ตัวอย่าง HTML"
+      - paragraph [ref=e272]: “เมื่อกดปุ่ม Python เขียนหมายเลขคำสั่งใน RAM แล้วส่งคำขอ INT2 เราเห็น REQUEST ตอนส่งคำขอ และ ENTER ตอน CPU เข้า ISR โดย CPU เก็บตำแหน่งกลับใน r31 จากนั้น ISR เก็บ r0 ถึง r15 บน Stack ทำให้ r29 เพิ่มจาก 3000 เป็น 3016 ระหว่างทำงานรีจิสเตอร์จะเปลี่ยนตามคำสั่ง เมื่อเสร็จจึงคืนค่าเดิม r29 กลับเป็น 3000 แล้ว RETI กลับไปยังตำแหน่งเดิม”
+    - generic [ref=e273]:
+      - generic [ref=e274]: 2:05–2:50 · Lap และ Pause
+      - generic [ref=e275]: กด Lap อีกครั้ง แล้วกด Pause → รอ → Start เพื่อ Resume
+      - paragraph [ref=e276]: “แต่ละรอบเก็บทั้งเวลาสะสมและระยะเวลาของรอบ เช่น รอบแรกที่ 3 วินาที รอบที่สองที่ 8 วินาที ระยะรอบที่สองเท่ากับ 8 ลบ 3 เป็น 5 วินาที การคำนวณนี้ทำใน Assembly การบันทึกรอบไม่หยุดจับเวลา ส่วน Pause ตั้ง running เป็นศูนย์ Timer ยังส่ง Interrupt แต่ไม่เพิ่มเวลา พอกดอีกครั้งจะทำงานต่อจากค่าเดิม”
+    - generic [ref=e277]:
+      - generic [ref=e278]: 2:50–3:30 · Reset และข้อจำกัด
+      - generic [ref=e279]: กด Reset และชี้ค่าบนหน้าจอ
+      - paragraph [ref=e280]: “Reset หยุดจับเวลา ตั้งเวลาเป็นศูนย์ และล้างรอบทั้งหมด หากบันทึกครบ 10 รอบ โปรแกรมจะปฏิเสธรอบใหม่ แต่ยังจับเวลาต่อ ระบบนี้แสดงกลไก Interrupt บน CPU จำลอง เวลาที่แสดงอ้างอิง simulated cycles และพยายามเดินใกล้เวลาจริง จึงไม่ใช่นาฬิกาสำหรับวัดเวลาที่ต้องการความแม่นยำสูง”
+  - generic [ref=e281]:
+    - heading "เตรียมตอบคำถาม" [level=2] [ref=e282]
+    - paragraph [ref=e283]: กดแต่ละคำถามเพื่ออ่านแนวตอบ
+    - group [ref=e284]:
+      - generic "1. ทำไมใช้ Interrupt แทน Polling?" [ref=e285] [cursor=pointer]
+    - group [ref=e286]:
+      - generic "2. ถ้า Timer กับปุ่มมาพร้อมกัน?" [ref=e287] [cursor=pointer]
+    - group [ref=e288]:
+      - generic "3. ทำไมรีจิสเตอร์เปลี่ยน แล้วกลับค่าเดิม?" [ref=e289] [cursor=pointer]
+    - group [ref=e290]:
+      - generic "4. ทำไมต้องมีทั้ง r29 และ r31?" [ref=e291] [cursor=pointer]
+    - group [ref=e292]:
+      - generic "5. RETI ต่างจาก JMP อย่างไร?" [ref=e293] [cursor=pointer]
+    - group [ref=e294]:
+      - generic "6. Pause แล้วทำไมจำนวน Timer Interrupt ยังเพิ่ม?" [ref=e295] [cursor=pointer]
+    - group [ref=e296]:
+      - generic "7. เวลา Lap ถูกบันทึกตรงตอนคลิกหรือไม่?" [ref=e297] [cursor=pointer]
+    - group [ref=e298]:
+      - generic "8. กด Lap ตอนหยุด หรือเกิน 10 รอบ?" [ref=e299] [cursor=pointer]
+    - group [ref=e300]:
+      - generic "9. นี่เป็น Interrupt ของฮาร์ดแวร์จริงหรือไม่?" [ref=e301] [cursor=pointer]
+    - group [ref=e302]:
+      - generic "10. ทำไม 1,000 cycles จึงเป็น 0.01 วินาที?" [ref=e303] [cursor=pointer]
+    - group [ref=e304]:
+      - generic "11. “no register/data change” แปลว่าคำสั่งไม่ทำงานหรือไม่?" [ref=e305] [cursor=pointer]
+    - group [ref=e306]:
+      - generic "12. ทำไม PC ตอนกลับไม่ใช่เลขเดิมทุกครั้ง?" [ref=e307] [cursor=pointer]
+    - group [ref=e308]:
+      - generic "13. ตัวเลขใน HTML ตรงกับการคลิก GUI ตอนนี้หรือไม่?" [ref=e309] [cursor=pointer]
+  - generic [ref=e310]: "แหล่งข้อมูลภายในโปรเจกต์: stopwatch.txt, simulator.py, tools/sim21.py และ tools/load.py · ค่ารีจิสเตอร์ในตัวอย่างได้จากการรัน stopwatch.obj · เปิดไฟล์นี้ในเบราว์เซอร์หรือสั่งพิมพ์เพื่ออ่านบทพูดได้"

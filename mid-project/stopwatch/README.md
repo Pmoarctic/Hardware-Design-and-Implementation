@@ -47,6 +47,38 @@ python simulator.py
 
 Keep the stopwatch window focused when using keyboard shortcuts.
 
+### Show button interrupts in the terminal
+
+Launch `python simulator.py` from PowerShell and place the terminal beside the
+GUI. Each button click (or keyboard shortcut) prints three trace messages:
+
+- `REQUEST INT2`: the adapter writes the command mailbox and raises IRQ2.
+- `ENTER INT2`: the simulated CPU accepts the interrupt and enters the button
+  ISR; the trace shows the ISR address and saved return address.
+- `RETI INT2`: the assembly ISR finishes; the trace shows its result, return
+  address, elapsed time, and lap count.
+
+Command numbers are `1` for start/pause, `2` for lap, and `3` for reset.
+Cycle numbers are simulated CPU cycles. Timer interrupts continue in the
+background and their count is visible in the GUI. The terminal displays the
+trace while the GUI accepts input; close the GUI or press `Q` with it focused
+to return to the PowerShell prompt.
+
+For instruction-by-instruction register and stopwatch memory changes, run:
+
+```powershell
+python simulator.py --trace-registers
+```
+
+Each `STEP` shows the instruction address, decoded assembly, changed registers
+and data, and the next PC. `trap r29 #15` saves r0-r15 on the stack;
+`trap r29 #16` restores them. r29 moves from 3000 to 3016 and back.
+Open `explanation-th.html` for the Thai presentation guide and an interactive
+replay of captured CPU register traces. HTML examples are offline recordings,
+not a live connection to the GUI. Detailed terminal output may slow simulation.
+After changing and rebuilding the assembly, run `python build_explanation.py`
+to refresh the HTML's embedded example traces.
+
 | Button / key | Behavior |
 |---|---|
 | Start / Pause / `S` | Start from zero, pause, or resume from the paused value. |

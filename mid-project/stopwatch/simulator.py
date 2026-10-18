@@ -8,6 +8,7 @@ running state, lap count, lap values or result values.
 import ast
 from collections import deque
 import importlib.util
+import io
 from pathlib import Path
 import sys
 import types
@@ -35,7 +36,11 @@ def load_module(name):
 
 
 class Machine:
-    def __init__(self, object_path=None):
+    def __init__(self, object_path=None, trace_buttons=False, trace_registers=False):
+        self.trace_buttons = trace_buttons or trace_registers
+        self.trace_registers = trace_registers
+        self.instructions = {}
+        self.register_trace = deque(maxlen=2000)
         self.cpu = load_module("cpu")
         self.memory = load_module("load")
         self.iot = load_module("iot")
@@ -56,6 +61,70 @@ class Machine:
         self.events = deque(maxlen=500)
         self.interrupt_counts = [0, 0, 0, 0]
         self.active_button = None
+        # Observe the exact CPU operations, including RETI followed by another
+        # interrupt in the same cycle. The course implementation stays intact.
+        original_interrupt = self.engine.interrupt
+        original_reti = self.engine.doreti
+        original_run = self.engine.run
+
+        def interrupt(number):
+            return_pc = self.engine.PC
+            old_r31 = self.engine.R[31]
+            before = self.engine.R.copy() if number == 2 and self.trace_registers else None
+            original_interrupt(number)
+            self.interrupt_counts[number] += 1
+            if number == 2:
+                self.trace_button(
+                    f"ENTER INT2: PC {return_pc} -> {self.engine.PC}; "
+                    f"r31 {old_r31} -> {self.engine.R[31]}; INT_ENABLE 1 -> 0")
+                if self.trace_registers:
+                    self.record_registers("ENTER INT2", return_pc, before)
+                    self.trace_button("CONTEXT BEFORE SAVE: " + " ".join(
+                        f"r{i}={self.engine.R[i]}" for i in range(16))
+                        + f"; r29(SP)={self.engine.R[29]}")
+
+        def reti():
+            number = self.engine.intnum
+            original_reti()
+            if number == 2 and self.active_button is not None:
+                self.events.append({
+                    "cycle": self.cpu.clock, "command": self.active_button,
+                    "result": self.get(RESULT), "elapsed": self.get(ELAPSED),
+                    "count": self.get(COUNT), "return_pc": self.engine.PC,
+                })
+                self.trace_button(
+                    f"RETI INT2: {RESULTS.get(self.get(RESULT), 'Unknown result')}; "
+                    f"return PC={self.engine.PC}; elapsed={format_time(self.get(ELAPSED))}; "
+                    f"laps={self.get(COUNT)}; INT_ENABLE 0 -> 1")
+                self.active_button = None
+
+        def run():
+            if not (self.trace_registers and self.engine.intnum == 2
+                    and not self.engine.intflag):
+                original_run()
+                return
+            pc = self.engine.PC
+            registers = self.engine.R.copy()
+            addresses = list(range(ELAPSED, MAIN + 1)) + list(range(LAPS, LAPS + 10)) + list(range(DURATIONS, DURATIONS + 10))
+            memory = {address: self.get(address) for address in addresses}
+            instruction = self.instruction_at(pc)
+            original_run()
+            self.record_registers(instruction, pc, registers)
+            changes = [f"r{i}: {old} -> {self.engine.R[i]}"
+                       for i, old in enumerate(registers) if old != self.engine.R[i]]
+            changes += [f"RAM[{address}]: {old} -> {self.get(address)}"
+                        for address, old in memory.items() if old != self.get(address)]
+            if instruction == "trap r29 #15":
+                changes.append("SAVE r0-r15 to stack RAM[3001..3016]")
+            elif instruction == "trap r29 #16":
+                changes.append("RESTORE r0-r15 from stack")
+            self.trace_button(f"STEP PC={pc} {instruction} | "
+                              + ("; ".join(changes) or "no register/data change")
+                              + f" | next PC={self.engine.PC}")
+
+        self.engine.interrupt = interrupt
+        self.engine.doreti = reti
+        self.engine.run = run
         for _ in range(1000):
             self.step(1)
             if self.get(READY) and self.engine.intflag and not self.engine.cpuflag:
@@ -65,6 +134,33 @@ class Machine:
 
     def get(self, address):
         return self.memory.getM(address)
+
+    def trace_button(self, message):
+        if self.trace_buttons:
+            print(f"[cycle {self.cpu.clock:>9}] {message}", flush=True)
+
+    def instruction_at(self, pc):
+        word = self.get(pc)
+        if word not in self.instructions:
+            output = io.StringIO()
+            previous_print = self.memory.print
+            try:
+                self.memory.print = lambda *a, **kw: print(*a, file=output, **kw)
+                self.memory.disassemble(word)
+            finally:
+                self.memory.print = previous_print
+            self.instructions[word] = output.getvalue().strip()
+        return self.instructions[word]
+
+    def record_registers(self, instruction, pc, before):
+        self.register_trace.append({
+            "cycle": self.cpu.clock, "instruction": instruction, "pc": pc,
+            "next_pc": self.engine.PC, "before": before,
+            "registers": self.engine.R.copy(), "interrupt_enabled": bool(self.engine.intflag),
+            "memory": {str(a): self.get(a) for a in
+                       list(range(ELAPSED, MAIN + 1)) + list(range(LAPS, LAPS + 10))
+                       + list(range(DURATIONS, DURATIONS + 10)) + list(range(3001, 3017))},
+        })
 
     def request(self, command):
         if len(self.queue) >= 32:
@@ -79,18 +175,9 @@ class Machine:
                 self.active_button = self.queue.popleft()
                 self.memory.setM(COMMAND, self.active_button)
                 self.cpu.intrq[2] = 1
-            was_enabled = self.engine.intflag
+                self.trace_button(
+                    f"REQUEST INT2: command={self.active_button} -> mailbox[1104]; IRQ2 raised")
             self.engine.runoneclock()
-            if was_enabled and not self.engine.intflag:
-                self.interrupt_counts[self.engine.intnum] += 1
-            if (not was_enabled and self.engine.intflag
-                    and self.engine.intnum == 2 and self.active_button is not None):
-                self.events.append({
-                    "cycle": self.cpu.clock, "command": self.active_button,
-                    "result": self.get(RESULT), "elapsed": self.get(ELAPSED),
-                    "count": self.get(COUNT), "return_pc": self.engine.PC,
-                })
-                self.active_button = None
 
     def snapshot(self):
         count = self.get(COUNT)
@@ -108,15 +195,24 @@ def format_time(ticks):
 
 
 def main():
+    import argparse
     import time
     import tkinter as tk
     from tkinter import ttk
 
+    parser = argparse.ArgumentParser(description="S2 stopwatch GUI with terminal interrupt trace")
+    parser.add_argument("--trace-registers", action="store_true",
+                        help="show each button ISR instruction, register changes and stopwatch RAM changes")
+    args = parser.parse_args()
     if not (HERE / "stopwatch.obj").exists():
         raise SystemExit("Run python build.py first.")
     if (HERE / "stopwatch.txt").stat().st_mtime > (HERE / "stopwatch.obj").stat().st_mtime:
         raise SystemExit("Assembly source changed. Run python build.py again.")
-    machine = Machine()
+    machine = Machine(trace_buttons=True, trace_registers=args.trace_registers)
+    print("Button interrupt trace: click Start/Pause, Save lap, or Reset in the GUI.\n"
+          "Command 1 = start/pause, 2 = lap, 3 = reset.\n"
+          "REQUEST = IRQ raised; ENTER = CPU entered ISR; RETI = ISR returned.\n"
+          "Timer INT0 continues in the background; its count is shown in the GUI.", flush=True)
     root = tk.Tk()
     root.title("S2 Assembly Stopwatch | Interrupt demonstration")
     root.geometry("880x760")

@@ -1,0 +1,304 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: S2 ASSEMBLY / INTERRUPT
+    - heading "ดู Register และหลักการที่ใช้" [level=1] [ref=e5]
+    - paragraph [ref=e6]: ติดตามค่าของ CPU ทีละคำสั่ง พร้อมความหมายของตัวแปรและรหัสสถานะ
+  - navigation "สารบัญ" [ref=e7]:
+    - link "ดู Register" [ref=e8] [cursor=pointer]:
+      - /url: "#registers"
+    - link "หลักการที่ใช้" [ref=e9] [cursor=pointer]:
+      - /url: "#knowledge"
+  - generic [ref=e10]:
+    - heading "ดูค่ารีจิสเตอร์ทีละขั้น" [level=2] [ref=e11]
+    - paragraph [ref=e12]:
+      - text: ข้อมูลบันทึกจาก CPU จำลองจริง — หน้านี้เล่นย้อนตัวอย่างที่ฝังไว้ใน HTML เปิดได้โดยไม่ใช้อินเทอร์เน็ต ไม่ได้เชื่อมกับ GUI ที่กำลังรันอยู่ หากต้องการค่าจากการกดปุ่มปัจจุบัน ให้ดู Terminal ในโหมด
+      - code [ref=e13]: "--trace-registers"
+    - generic [ref=e14]:
+      - generic [ref=e15]: "เหตุการณ์:"
+      - combobox "เหตุการณ์:" [ref=e16]:
+        - option "Start · เริ่มจับเวลา" [selected]
+        - option "Lap 1 · บันทึกรอบแรก"
+        - option "Lap 2 · คำนวณผลต่าง"
+        - option "Pause · หยุดชั่วคราว"
+        - option "Resume · ทำงานต่อ"
+        - option "Reset · ล้างเวลาและรอบ"
+        - option "Lap ขณะหยุด · ปฏิเสธคำสั่ง"
+      - button "เริ่มต้น" [disabled] [ref=e17]
+      - button "← ก่อนหน้า" [disabled] [ref=e18]
+      - button "▶ เล่นทีละขั้น" [ref=e19] [cursor=pointer]
+      - button "ถัดไป →" [ref=e20] [cursor=pointer]
+      - button "ไป RETI" [ref=e21] [cursor=pointer]
+    - paragraph [ref=e22]: "เริ่มจากสถานะหยุด: Assembly เปลี่ยน running จาก 0 เป็น 1"
+    - text: เลื่อนเลือกคำสั่ง
+    - slider "ลำดับคำสั่ง" [ref=e23]: "0"
+    - generic [ref=e24]:
+      - generic [ref=e25]: ขั้น 1 / 15
+      - generic [ref=e26]: cycle 79
+      - generic [ref=e27]: PC 33 → 42
+      - generic [ref=e28]: INT_ENABLE 0 = ปิดรับ Interrupt ซ้อน
+      - generic [ref=e29]: "running: 0 = STOPPED / PAUSED · ไม่สะสมเวลา"
+    - generic [ref=e30]: ENTER INT2
+    - paragraph [ref=e31]: "CPU รับ IRQ2: เก็บตำแหน่งกลับใน r31 แล้วเปลี่ยน PC ไปยัง Button ISR; ยังไม่ได้เก็บ r0–r15 ลง Stack"
+    - paragraph [ref=e32]:
+      - generic [ref=e33]: สีเหลือง = ค่าที่เปลี่ยนในขั้นนี้
+      - text: ตัวเลขเป็นฐานสิบ ลูกศรแสดงค่าก่อน → หลัง ส่วนค่าไม่เปลี่ยนแสดงเพียงค่าเดียว
+    - paragraph [ref=e34]:
+      - text: รีจิสเตอร์ไม่ได้ผูกกับตัวแปรเดียวตลอดเวลา เช่น r1 อาจเก็บ
+      - code [ref=e35]: command
+      - text: แล้วเปลี่ยนไปเก็บ
+      - code [ref=e36]: running
+      - text: หรือ
+      - code [ref=e37]: elapsed
+      - text: คำอธิบายใต้แต่ละช่องจะแสดงความหมายของค่า หลังคำสั่งปัจจุบัน ตามเส้นทางที่รันจริง
+    - generic [ref=e38]:
+      - generic [ref=e39]:
+        - strong [ref=e40]: r1
+        - generic [ref=e41]: "1"
+        - generic [ref=e42]:
+          - generic [ref=e43]: ค่าเดิมก่อนเข้า ISR
+          - text: 1 = ค่าของโปรแกรมเดิม ไม่ควรตีความเป็น command หรือ running ของปุ่มครั้งนี้
+          - generic [ref=e44]: ก่อนเข้า INT2
+      - generic [ref=e45]:
+        - strong [ref=e46]: r2
+        - generic [ref=e47]: "10"
+        - generic [ref=e48]:
+          - generic [ref=e49]: ค่าเดิมก่อนเข้า ISR
+          - text: 10 = ค่าของโปรแกรมเดิม ไม่ควรตีความเป็น command หรือ running ของปุ่มครั้งนี้
+          - generic [ref=e50]: ก่อนเข้า INT2
+      - generic [ref=e51]:
+        - strong [ref=e52]: r3
+        - generic [ref=e53]: "0"
+        - generic [ref=e54]:
+          - generic [ref=e55]: ค่าเดิมก่อนเข้า ISR
+          - text: 0 = ค่าของโปรแกรมเดิม ไม่ควรตีความเป็น command หรือ running ของปุ่มครั้งนี้
+          - generic [ref=e56]: ก่อนเข้า INT2
+      - generic [ref=e57]:
+        - strong [ref=e58]: r4
+        - generic [ref=e59]: "0"
+        - generic [ref=e60]:
+          - generic [ref=e61]: ค่าเดิมก่อนเข้า ISR
+          - text: 0 = ค่าของโปรแกรมเดิม ไม่ควรตีความเป็น command หรือ running ของปุ่มครั้งนี้
+          - generic [ref=e62]: ก่อนเข้า INT2
+      - generic [ref=e63]:
+        - strong [ref=e64]: r10
+        - generic [ref=e65]: "1"
+        - generic [ref=e66]:
+          - generic [ref=e67]: main_passes · ตัวนับลูปหลัก
+          - text: 1 ครั้ง · ตัวนับการผ่านลูปหลัก ไม่ใช่เวลา
+          - generic [ref=e68]: ก่อนเข้า INT2
+      - generic [ref=e69]:
+        - strong [ref=e70]: r29 · SP
+        - generic [ref=e71]: "3000"
+        - generic [ref=e72]:
+          - generic [ref=e73]: SP · Stack Pointer
+          - text: 3000 = ตำแหน่งฐาน Stack ก่อนเก็บ / หลังคืนรีจิสเตอร์
+          - generic [ref=e74]: เป็น address ใน RAM ไม่ใช่รหัสสถานะ
+      - generic [ref=e75]:
+        - strong [ref=e76]: r31 · return PC
+        - generic [ref=e77]: 0 → 33
+        - generic [ref=e78]:
+          - generic [ref=e79]: return PC · ตำแหน่งที่จะกลับ
+          - text: RETI จะกลับไปที่คำสั่ง address 33
+          - generic [ref=e80]: CPU บันทึก PC ตอนรับ INT2
+    - group [ref=e81]:
+      - generic "ดูรีจิสเตอร์อื่นที่ ISR นี้ไม่ได้ใช้คำนวณ" [ref=e82] [cursor=pointer]
+    - generic [ref=e83]:
+      - generic [ref=e84]:
+        - heading "ข้อมูล Stopwatch ใน RAM" [level=3] [ref=e85]
+        - table [ref=e87]:
+          - rowgroup [ref=e88]:
+            - row [ref=e89]:
+              - columnheader "Address / ตัวแปร" [ref=e90]
+              - columnheader "ค่า" [ref=e91]
+              - columnheader "ความหมายของค่าปัจจุบัน" [ref=e92]
+          - rowgroup [ref=e93]:
+            - row [ref=e94]:
+              - cell "1100 · elapsed" [ref=e95]
+              - cell "0" [ref=e96]
+              - cell "0 Tick = 0.00 วินาที · เวลาสะสม" [ref=e97]
+            - row [ref=e98]:
+              - cell "1101 · running" [ref=e99]
+              - cell "0" [ref=e100]
+              - cell "0 = STOPPED / PAUSED · ไม่สะสมเวลา" [ref=e101]
+            - row [ref=e102]:
+              - cell "1102 · lap_count" [ref=e103]
+              - cell "0" [ref=e104]
+              - cell "0 รอบ · จำนวนรอบที่บันทึก / จำนวนที่เตรียมเขียนลง RAM" [ref=e105]
+            - row [ref=e106]:
+              - cell "1103 · previous" [ref=e107]
+              - cell "0" [ref=e108]
+              - cell "0 Tick = 0.00 วินาที · เวลาสะสมของ Lap ก่อนหน้า" [ref=e109]
+            - row [ref=e110]:
+              - cell "1104 · command" [ref=e111]
+              - cell "1" [ref=e112]
+              - cell "1 = Start / Pause — สลับเริ่มกับหยุด" [ref=e113]
+            - row [ref=e114]:
+              - cell "1105 · result" [ref=e115]
+              - cell "0" [ref=e116]
+              - cell "0 = ยังไม่มีผลลัพธ์จากปุ่ม · ผลล่าสุดใน RAM อาจเป็นของปุ่มครั้งก่อน จนกว่าจะมี st ลง 1105" [ref=e117]
+            - row [ref=e118]:
+              - cell "1106 · ready" [ref=e119]
+              - cell "1" [ref=e120]
+              - cell "1 = READY · เริ่มต้นระบบเสร็จแล้ว" [ref=e121]
+            - row [ref=e122]:
+              - cell "1107 · main_passes" [ref=e123]
+              - cell "1" [ref=e124]
+              - cell "1 ครั้ง · ตัวนับการผ่านลูปหลัก ไม่ใช่เวลา" [ref=e125]
+      - generic [ref=e126]:
+        - heading "Lap และระยะเวลา" [level=3] [ref=e127]
+        - paragraph [ref=e128]: "หน่วยเป็น Tick: 100 Tick = เวลาที่แสดง 1 วินาที"
+        - table [ref=e130]:
+          - rowgroup [ref=e131]:
+            - row [ref=e132]:
+              - columnheader "ช่อง" [ref=e133]
+              - columnheader "เวลาสะสม" [ref=e134]
+              - columnheader "ระยะรอบ" [ref=e135]
+          - rowgroup [ref=e136]:
+            - row [ref=e137]:
+              - cell "1" [ref=e138]
+              - cell "0" [ref=e139]
+              - cell "0" [ref=e140]
+            - row [ref=e141]:
+              - cell "2" [ref=e142]
+              - cell "0" [ref=e143]
+              - cell "0" [ref=e144]
+            - row [ref=e145]:
+              - cell "3" [ref=e146]
+              - cell "0" [ref=e147]
+              - cell "0" [ref=e148]
+            - row [ref=e149]:
+              - cell "4" [ref=e150]
+              - cell "0" [ref=e151]
+              - cell "0" [ref=e152]
+            - row [ref=e153]:
+              - cell "5" [ref=e154]
+              - cell "0" [ref=e155]
+              - cell "0" [ref=e156]
+            - row [ref=e157]:
+              - cell "6" [ref=e158]
+              - cell "0" [ref=e159]
+              - cell "0" [ref=e160]
+            - row [ref=e161]:
+              - cell "7" [ref=e162]
+              - cell "0" [ref=e163]
+              - cell "0" [ref=e164]
+            - row [ref=e165]:
+              - cell "8" [ref=e166]
+              - cell "0" [ref=e167]
+              - cell "0" [ref=e168]
+            - row [ref=e169]:
+              - cell "9" [ref=e170]
+              - cell "0" [ref=e171]
+              - cell "0" [ref=e172]
+            - row [ref=e173]:
+              - cell "10" [ref=e174]
+              - cell "0" [ref=e175]
+              - cell "0" [ref=e176]
+    - group [ref=e177]:
+      - generic "ดู Stack ที่เก็บ r0–r15 (RAM 3001–3016)" [ref=e178] [cursor=pointer]
+    - paragraph [ref=e179]: "ประโยคที่ใช้ชี้อธิบาย: “รีจิสเตอร์เป็นพื้นที่ทำงานชั่วคราวของ ISR จึงเปลี่ยนระหว่างประมวลผล แล้วคืนค่าเดิมก่อน RETI ส่วนผลลัพธ์ที่ต้องเก็บต่อ เช่น running และ lap_count จะถูกเขียนลง RAM”"
+  - generic [ref=e180]:
+    - heading "หลักการที่ใช้" [level=2] [ref=e181]
+    - generic [ref=e182]:
+      - generic [ref=e183]:
+        - heading "แบ่งหน้าที่อย่างไร?" [level=3] [ref=e184]
+        - paragraph [ref=e185]: "Python: จำลอง CPU, Timer, การส่งคำขอ Interrupt และ GUI โดย GUI อ่าน RAM มาแสดงผล"
+        - paragraph [ref=e186]: "S2 Assembly: ตรวจสถานะ เพิ่มเวลาสะสม เริ่ม/หยุด บันทึกรอบ คำนวณระยะรอบ ตรวจความจุ และรีเซ็ต"
+        - paragraph [ref=e187]:
+          - text: "INT0: Timer ขอ Interrupt ทุก 1,000 simulated cycles ถ้า"
+          - code [ref=e188]: running = 1
+          - text: จึงเพิ่ม
+          - code [ref=e189]: elapsed
+          - text: หนึ่ง Tick
+        - paragraph [ref=e190]: "INT2: ปุ่มส่งคำสั่งผ่าน RAM[1104]: 1 = Start/Pause, 2 = Lap, 3 = Reset"
+      - generic [ref=e191]:
+        - heading "รีจิสเตอร์แต่ละตัวทำอะไร?" [level=3] [ref=e192]
+        - list [ref=e193]:
+          - listitem [ref=e194]: "PC: ตำแหน่งคำสั่ง ไม่ใช่หนึ่งใน r0–r31"
+          - listitem [ref=e195]: "r31: CPU เก็บ PC ที่จะกลับเมื่อรับ Interrupt"
+          - listitem [ref=e196]: "r29: Stack Pointer เริ่มที่ 3000"
+          - listitem [ref=e197]: "r0–r15: ISR เก็บก่อนใช้และคืนค่าตอนจบ"
+          - listitem [ref=e198]: "r1: ใช้อ่าน command / สถานะ / เวลา / ผลลัพธ์ตามช่วงคำสั่ง"
+          - listitem [ref=e199]: "r2: ใช้เปรียบเทียบคำสั่ง จำนวนรอบ และดัชนีวนลูป"
+          - listitem [ref=e200]: "r3: ใช้ผลเปรียบเทียบและเวลารอบก่อนหน้า"
+          - listitem [ref=e201]: "r4: ใช้เก็บผลต่างเวลาของรอบ"
+    - table [ref=e203]:
+      - rowgroup [ref=e204]:
+        - row [ref=e205]:
+          - columnheader "ขั้นตอน" [ref=e206]
+          - columnheader "สิ่งที่เกิดขึ้น" [ref=e207]
+          - columnheader "จุดที่ควรชี้" [ref=e208]
+      - rowgroup [ref=e209]:
+        - row [ref=e210]:
+          - cell "เข้า Interrupt" [ref=e211]
+          - cell "CPU เก็บ return PC ใน r31 แล้วอ่านตำแหน่ง ISR จาก vector RAM[1002]" [ref=e212]
+          - cell "PC เปลี่ยนไปที่ button ISR; ปิดการรับ Interrupt ซ้อน" [ref=e213]
+        - row [ref=e214]:
+          - cell [ref=e215]:
+            - code [ref=e216]: "trap r29 #15"
+          - cell "เก็บ r0–r15 จำนวน 16 ค่า ลง Stack" [ref=e217]
+          - 'cell "r29: 3000 → 3016" [ref=e218]'
+        - row [ref=e219]:
+          - cell "จัดการปุ่ม" [ref=e220]
+          - cell "อ่าน command แล้วเลือก Start/Pause, Lap หรือ Reset" [ref=e221]
+          - cell "r1–r4 และ RAM เปลี่ยนตามคำสั่งจริง" [ref=e222]
+        - row [ref=e223]:
+          - cell [ref=e224]:
+            - code [ref=e225]: "trap r29 #16"
+          - cell "คืนค่า r0–r15 จาก Stack" [ref=e226]
+          - 'cell "r29: 3016 → 3000; ค่ารีจิสเตอร์กลับเหมือนก่อน ISR" [ref=e227]'
+        - row [ref=e228]:
+          - cell [ref=e229]:
+            - code [ref=e230]: reti
+          - cell "ตั้ง PC จาก r31 และเปิดการรับ Interrupt อีกครั้ง" [ref=e231]
+          - cell "กลับไปทำงานต่อ; หากมีคำขอรออยู่ CPU อาจรับต่อทันที" [ref=e232]
+    - paragraph [ref=e233]:
+      - text: r31 ไม่ได้คืนค่าเดิมแบบ r0–r15 เพราะเป็นที่เก็บตำแหน่งกลับของ Interrupt ครั้งนี้ ส่วน
+      - code [ref=e234]: INT_ENABLE
+      - text: ที่แสดงคือสถานะรับ Interrupt ภายในตัวจำลอง ไม่ใช่รีจิสเตอร์ r ตัวหนึ่ง
+    - heading "ตัวเลขสถานะต้องอ่านคู่กับชื่อตัวแปร" [level=3] [ref=e235]
+    - paragraph [ref=e236]: ตัวเลขเดียวกันอาจมีคนละความหมาย เช่น command = 2 คือขอบันทึก Lap แต่ result = 2 คือหยุดชั่วคราว และค่าจากการเปรียบเทียบ 1 หมายถึง TRUE ไม่ได้หมายถึงกำลังจับเวลาเสมอไป
+    - table [ref=e238]:
+      - rowgroup [ref=e239]:
+        - row [ref=e240]:
+          - columnheader "ตัวแปร / สถานะ" [ref=e241]
+          - columnheader "ความหมายของตัวเลข" [ref=e242]
+      - rowgroup [ref=e243]:
+        - row [ref=e244]:
+          - cell "running" [ref=e245]
+          - cell "0 = ไม่สะสมเวลา (ยังไม่เริ่ม / Pause / Reset), 1 = กำลังจับเวลา ไม่มีรหัสแยกสำหรับ Pause และ Reset" [ref=e246]
+        - row [ref=e247]:
+          - cell "command" [ref=e248]
+          - cell "0 = ไม่มีคำสั่งค้าง, 1 = Start/Pause, 2 = Lap, 3 = Reset" [ref=e249]
+        - row [ref=e250]:
+          - cell "result" [ref=e251]
+          - cell "0 = ยังไม่มีผลลัพธ์, 1 = เริ่ม/ทำงานต่อ, 2 = Pause, 3 = บันทึก Lap แล้ว, 4 = เต็ม 10 รอบ, 5 = บันทึกไม่ได้เพราะหยุดอยู่, 6 = Reset แล้ว, 7 = ไม่รู้จักคำสั่ง" [ref=e252]
+        - row [ref=e253]:
+          - cell "ready" [ref=e254]
+          - cell "0 = ยังเริ่มต้นไม่เสร็จ, 1 = เริ่มต้นระบบเสร็จแล้ว" [ref=e255]
+        - row [ref=e256]:
+          - cell "ผลเปรียบเทียบ eq / lt" [ref=e257]
+          - cell "0 = FALSE (เท็จ), 1 = TRUE (จริง) ใช้เลือกว่าจะกระโดดไปทำส่วนใด" [ref=e258]
+        - row [ref=e259]:
+          - cell "INT_ENABLE" [ref=e260]
+          - cell "0 = ปิดรับ Interrupt ซ้อน, 1 = เปิดรับ Interrupt โดยยังต้องพิจารณา mask และคำขอที่รออยู่" [ref=e261]
+    - heading "คำสั่งที่อ่านแล้วควรเข้าใจ" [level=3] [ref=e262]
+    - paragraph [ref=e263]:
+      - code [ref=e264]: ld
+      - text: อ่านจาก RAM เข้ารีจิสเตอร์ ·
+      - code [ref=e265]: st
+      - text: เขียนจากรีจิสเตอร์ลง RAM ·
+      - code [ref=e266]: mov
+      - text: กำหนดค่า ·
+      - code [ref=e267]: eq / lt
+      - text: เปรียบเทียบ ได้ 1 หรือ 0 ·
+      - code [ref=e268]: jt / jf
+      - text: กระโดดตามเงื่อนไข ·
+      - code [ref=e269]: sub
+      - text: ลบ ·
+      - code [ref=e270]: wfi
+      - text: รอ Interrupt
+    - paragraph [ref=e271]:
+      - text: "ตัวอย่าง Lap:"
+      - code [ref=e272]: sub r4 r1 r3
+      - text: หมายถึง r4 = เวลาปัจจุบัน − เวลารอบก่อนหน้า จากนั้นเขียนผลลงตาราง durations ใน RAM
